@@ -7,4 +7,7 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  googleCloudProject: process.env.GOOGLE_CLOUD_PROJECT ?? "",
+  googleApplicationCredentialsJson: process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON ?? "",
+  bigqueryDataset: process.env.BIGQUERY_DATASET ?? "",
 };
