@@ -40,4 +40,11 @@
 - [x] Test BigQuery storage and retrieval
 - [x] Test retry mechanism for invalid JSON
 - [x] Test configuration refresh
-- [ ] Create deployment checkpoint
+- [x] Create deployment checkpoint
+
+## New Features
+- [x] Implement GCS signed URL generation endpoint
+- [x] Implement client-side direct-to-GCS upload
+- [x] Update file record with actual GCS URL after upload
+- [x] Rename application to "Maira Creative Marker"
+- [x] Test complete upload and analysis pipeline

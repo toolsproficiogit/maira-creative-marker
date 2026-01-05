@@ -36,6 +36,8 @@ export default function ToolUseSection() {
 
   const createSessionMutation = trpc.analysis.createSession.useMutation();
   const uploadFileMutation = trpc.analysis.uploadFile.useMutation();
+  const generateUploadUrlMutation = trpc.analysis.generateUploadUrl.useMutation();
+  const updateFileUrlMutation = trpc.analysis.updateFileUrl.useMutation();
   const runAnalysisMutation = trpc.analysis.runAnalysis.useMutation();
   const { data: configData } = trpc.analysis.getConfig.useQuery();
 
@@ -94,7 +96,27 @@ export default function ToolUseSection() {
       if (uploadedFile.fileId) continue; // Already uploaded
 
       try {
-        // Upload file metadata first
+        // Step 1: Generate signed upload URL
+        const urlData = await generateUploadUrlMutation.mutateAsync({
+          sessionId,
+          filename: uploadedFile.file.name,
+          contentType: uploadedFile.file.type,
+        });
+
+        // Step 2: Upload file directly to GCS using signed URL
+        const uploadResponse = await fetch(urlData.uploadUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": uploadedFile.file.type,
+          },
+          body: uploadedFile.file,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error(`GCS upload failed: ${uploadResponse.statusText}`);
+        }
+
+        // Step 3: Create file metadata record
         const metadata = await uploadFileMutation.mutateAsync({
           sessionId,
           filename: uploadedFile.file.name,
@@ -103,19 +125,19 @@ export default function ToolUseSection() {
           contextFields: uploadedFile.contextFields,
         });
 
-        // For now, we'll use a placeholder URL
-        // In production, implement signed URL upload to GCS
-        const placeholderUrl = `https://storage.googleapis.com/${metadata.fileKey}`;
+        // Step 4: Update file record with public URL
+        await updateFileUrlMutation.mutateAsync({
+          fileId: metadata.fileId,
+          fileUrl: urlData.publicUrl,
+        });
 
-        // Update file record
+        // Update UI
         const updated = [...uploadedFiles];
         updated[i].fileId = metadata.fileId;
         updated[i].filetype = metadata.filetype;
         setUploadedFiles(updated);
 
         toast.success(`Uploaded: ${uploadedFile.file.name}`);
-        
-        // TODO: Implement actual GCS signed URL upload in production
       } catch (error: any) {
         toast.error(`Failed to upload ${uploadedFile.file.name}: ${error.message}`);
       }

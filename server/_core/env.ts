@@ -10,4 +10,5 @@ export const ENV = {
   googleCloudProject: process.env.GOOGLE_CLOUD_PROJECT ?? "",
   googleApplicationCredentialsJson: process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON ?? "",
   bigqueryDataset: process.env.BIGQUERY_DATASET ?? "",
+  gcsBucket: process.env.GCS_BUCKET ?? "maira-creative-marker",
 };

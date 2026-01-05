@@ -9,12 +9,17 @@ import {
   getAnalysisResultsBySession as getDbAnalysisResults,
   getSessionById,
   getFileById,
+  getDb,
 } from "./db";
+import { files } from "../drizzle/schema";
+import { eq } from "drizzle-orm";
 import { analyzeWithRetry } from "./vertexAI";
 import { ensureTableExists, insertAnalysisResult } from "./bigquery";
 import { loadConfig, saveConfig, getCachedConfig, getDefaultConfig, AppConfig } from "./config";
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
+import { generateSignedUploadUrl } from "./gcsStorage";
+import { ENV } from "./_core/env";
 
 const CONFIG_BUCKET = "video-analysis-config";
 
@@ -33,6 +38,48 @@ export const analysisRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Session not found" });
       }
       return session;
+    }),
+
+  // Generate signed upload URL
+  generateUploadUrl: protectedProcedure
+    .input(
+      z.object({
+        sessionId: z.number(),
+        filename: z.string(),
+        contentType: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      // Infer filetype from content type
+      let filetype: "image" | "video";
+      if (input.contentType.startsWith("image/")) {
+        filetype = "image";
+      } else if (input.contentType.startsWith("video/")) {
+        filetype = "video";
+      } else {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "File must be an image or video",
+        });
+      }
+
+      // Generate unique file key
+      const fileKey = `${ctx.user.id}/sessions/${input.sessionId}/${nanoid()}-${input.filename}`;
+
+      // Generate signed URL
+      const { uploadUrl, publicUrl } = await generateSignedUploadUrl({
+        bucketName: ENV.gcsBucket,
+        fileKey,
+        contentType: input.contentType,
+        expiresIn: 900, // 15 minutes
+      });
+
+      return {
+        uploadUrl,
+        publicUrl,
+        fileKey,
+        filetype,
+      };
     }),
 
   // File upload
@@ -88,6 +135,23 @@ export const analysisRouter = router({
         fileKey,
         filetype,
       };
+    }),
+
+  // Update file URL after upload
+  updateFileUrl: protectedProcedure
+    .input(
+      z.object({
+        fileId: z.number(),
+        fileUrl: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      await db.update(files).set({ fileUrl: input.fileUrl }).where(eq(files.id, input.fileId));
+
+      return { success: true };
     }),
 
   // Get files for a session

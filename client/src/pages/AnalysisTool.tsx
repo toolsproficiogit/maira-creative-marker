@@ -26,7 +26,7 @@ export default function AnalysisTool() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Video & Image Analysis Tool</CardTitle>
+            <CardTitle>Maira Creative Marker</CardTitle>
             <CardDescription>
               Sign in to analyze your media files with AI
             </CardDescription>
@@ -45,7 +45,7 @@ export default function AnalysisTool() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="container py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight">Video & Image Analysis Tool</h1>
+          <h1 className="text-4xl font-bold tracking-tight">Maira Creative Marker</h1>
           <p className="text-muted-foreground mt-2">
             Upload media files, provide context, and get AI-powered analysis
           </p>
