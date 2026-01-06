@@ -48,3 +48,13 @@
 - [x] Update file record with actual GCS URL after upload
 - [x] Rename application to "Maira Creative Marker"
 - [x] Test complete upload and analysis pipeline
+
+## Custom Configuration
+- [x] Create optimized Czech system prompt for video performance
+- [x] Create JSON output schema for video performance analysis
+- [x] Add proper identifiers (fileId, sessionId, analysisId, timestamp)
+
+## Configuration Updates
+- [x] Set Czech video performance prompt as default
+- [x] Add _test suffix to all default table names
+- [x] Test configuration persistence across sessions
