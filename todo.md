@@ -64,3 +64,8 @@
 - [x] Create image-branding Czech prompt and schema
 - [x] Create image-performance Czech prompt and schema
 - [x] Update default configuration with all 3 new pairs
+
+## Bug Fixes
+- [x] Fix Configuration tab to display all 4 updated Czech prompts and schemas
+- [x] Verify configuration loading from external files works correctly
+- [x] Test that all 4 analysis combinations use the correct prompts

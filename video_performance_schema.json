@@ -1,0 +1,217 @@
+{
+  "tableName": "video_performance_analysis_test",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "analysis_metadata": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "description": "Brand name from context"
+          },
+          "category": {
+            "type": "string",
+            "description": "Product/service category"
+          },
+          "target_audience": {
+            "type": "string",
+            "description": "Target audience description"
+          },
+          "primary_message": {
+            "type": "string",
+            "description": "Primary message from context"
+          },
+          "secondary_messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Secondary messages from context"
+          }
+        },
+        "required": ["brand", "category", "target_audience", "primary_message"],
+        "additionalProperties": false
+      },
+      "section_a_hook": {
+        "type": "object",
+        "properties": {
+          "hook_evidence_timestamp": {
+            "type": "string",
+            "description": "Timestamp of key moment (e.g., '0:00-0:03')"
+          },
+          "hook_evidence_description": {
+            "type": "string",
+            "description": "Description of opening scene"
+          },
+          "hook_analysis": {
+            "type": "string",
+            "description": "Evaluation of hook and branding (2-3 sentences in Czech)"
+          },
+          "hook_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["hook_evidence_timestamp", "hook_evidence_description", "hook_analysis", "hook_score"],
+        "additionalProperties": false
+      },
+      "section_b_message": {
+        "type": "object",
+        "properties": {
+          "message_evidence_timestamp": {
+            "type": "string",
+            "description": "Timestamp of main message delivery"
+          },
+          "message_evidence_description": {
+            "type": "string",
+            "description": "Description of value proposition moment"
+          },
+          "message_analysis": {
+            "type": "string",
+            "description": "Evaluation of clarity and speed (2-3 sentences in Czech)"
+          },
+          "message_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["message_evidence_timestamp", "message_evidence_description", "message_analysis", "message_score"],
+        "additionalProperties": false
+      },
+      "section_c_pacing": {
+        "type": "object",
+        "properties": {
+          "pacing_evidence_timestamp": {
+            "type": "string",
+            "description": "Timestamp of weakest or strongest passage"
+          },
+          "pacing_evidence_description": {
+            "type": "string",
+            "description": "Description of editing dynamics"
+          },
+          "pacing_analysis": {
+            "type": "string",
+            "description": "Evaluation of rhythm and editing (2-3 sentences in Czech)"
+          },
+          "pacing_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["pacing_evidence_timestamp", "pacing_evidence_description", "pacing_analysis", "pacing_score"],
+        "additionalProperties": false
+      },
+      "section_d_cta": {
+        "type": "object",
+        "properties": {
+          "cta_evidence_timestamp": {
+            "type": "string",
+            "description": "Timestamp of CTA appearance"
+          },
+          "cta_evidence_description": {
+            "type": "string",
+            "description": "Description of final call-to-action"
+          },
+          "cta_analysis": {
+            "type": "string",
+            "description": "Evaluation of CTA strength (2-3 sentences in Czech)"
+          },
+          "cta_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["cta_evidence_timestamp", "cta_evidence_description", "cta_analysis", "cta_score"],
+        "additionalProperties": false
+      },
+      "final_scorecard": {
+        "type": "object",
+        "properties": {
+          "hook_weighted_score": {
+            "type": "number",
+            "description": "hook_score * 0.3"
+          },
+          "message_weighted_score": {
+            "type": "number",
+            "description": "message_score * 0.3"
+          },
+          "pacing_weighted_score": {
+            "type": "number",
+            "description": "pacing_score * 0.2"
+          },
+          "cta_weighted_score": {
+            "type": "number",
+            "description": "cta_score * 0.2"
+          },
+          "total_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5,
+            "description": "Sum of weighted scores (max 5.0)"
+          },
+          "total_percentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "(total_score / 5) * 100"
+          },
+          "hook_verdict": {
+            "type": "string",
+            "description": "Brief comment on Hook section (1 sentence in Czech)"
+          },
+          "message_verdict": {
+            "type": "string",
+            "description": "Brief comment on Message section (1 sentence in Czech)"
+          },
+          "pacing_verdict": {
+            "type": "string",
+            "description": "Brief comment on Pacing section (1 sentence in Czech)"
+          },
+          "cta_verdict": {
+            "type": "string",
+            "description": "Brief comment on CTA section (1 sentence in Czech)"
+          }
+        },
+        "required": ["hook_weighted_score", "message_weighted_score", "pacing_weighted_score", "cta_weighted_score", "total_score", "total_percentage", "hook_verdict", "message_verdict", "pacing_verdict", "cta_verdict"],
+        "additionalProperties": false
+      },
+      "action_plan": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "action_title": {
+              "type": "string",
+              "description": "Action name (e.g., 'Hook Optimization')"
+            },
+            "action_description": {
+              "type": "string",
+              "description": "Specific instructions including timestamps (in Czech)"
+            },
+            "priority": {
+              "type": "string",
+              "enum": ["high", "medium", "low"],
+              "description": "Priority level"
+            }
+          },
+          "required": ["action_title", "action_description", "priority"],
+          "additionalProperties": false
+        },
+        "minItems": 3,
+        "maxItems": 5,
+        "description": "3-5 concrete action steps for optimization"
+          }
+    },
+    "required": ["analysis_metadata", "section_a_hook", "section_b_message", "section_c_pacing", "section_d_cta", "final_scorecard", "action_plan"],
+    "additionalProperties": false
+  }
+}
