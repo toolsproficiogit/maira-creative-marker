@@ -58,3 +58,9 @@
 - [x] Set Czech video performance prompt as default
 - [x] Add _test suffix to all default table names
 - [x] Test configuration persistence across sessions
+
+## Additional Prompt/Schema Pairs
+- [x] Create video-branding Czech prompt and schema
+- [x] Create image-branding Czech prompt and schema
+- [x] Create image-performance Czech prompt and schema
+- [x] Update default configuration with all 3 new pairs

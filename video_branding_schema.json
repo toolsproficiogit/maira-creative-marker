@@ -1,0 +1,236 @@
+{
+  "tableName": "video_branding_analysis_test",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "analysis_metadata": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "description": "Brand name from context"
+          },
+          "category": {
+            "type": "string",
+            "description": "Product/service category"
+          },
+          "target_audience": {
+            "type": "string",
+            "description": "Target audience description"
+          },
+          "primary_message": {
+            "type": "string",
+            "description": "Primary message from context"
+          },
+          "secondary_messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Secondary messages from context"
+          }
+        },
+        "required": ["brand", "category", "target_audience", "primary_message"],
+        "additionalProperties": false
+      },
+      "section_a_linkage": {
+        "type": "object",
+        "properties": {
+          "linkage_evidence_timestamp": {
+            "type": "string",
+            "description": "Timestamp of key integration moments"
+          },
+          "linkage_evidence_description": {
+            "type": "string",
+            "description": "Description of brand-story connection moments"
+          },
+          "linkage_analysis": {
+            "type": "string",
+            "description": "Evaluation of Brand-Story linkage (2-3 sentences in Czech)"
+          },
+          "linkage_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["linkage_evidence_timestamp", "linkage_evidence_description", "linkage_analysis", "linkage_score"],
+        "additionalProperties": false
+      },
+      "section_b_story": {
+        "type": "object",
+        "properties": {
+          "story_evidence_timestamp": {
+            "type": "string",
+            "description": "Timestamp of emotional peak"
+          },
+          "story_evidence_description": {
+            "type": "string",
+            "description": "Description of emotional story structure"
+          },
+          "story_analysis": {
+            "type": "string",
+            "description": "Evaluation of story strength (2-3 sentences in Czech)"
+          },
+          "story_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["story_evidence_timestamp", "story_evidence_description", "story_analysis", "story_score"],
+        "additionalProperties": false
+      },
+      "section_c_message": {
+        "type": "object",
+        "properties": {
+          "message_evidence_timestamp": {
+            "type": "string",
+            "description": "Timestamp of 'Aha moment'"
+          },
+          "message_evidence_description": {
+            "type": "string",
+            "description": "Description of message delivery"
+          },
+          "message_analysis": {
+            "type": "string",
+            "description": "Evaluation of message comprehension (2-3 sentences in Czech)"
+          },
+          "message_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["message_evidence_timestamp", "message_evidence_description", "message_analysis", "message_score"],
+        "additionalProperties": false
+      },
+      "section_d_craft": {
+        "type": "object",
+        "properties": {
+          "craft_evidence_timestamp": {
+            "type": "string",
+            "description": "Timestamp of craft evaluation"
+          },
+          "craft_evidence_description": {
+            "type": "string",
+            "description": "Description of execution quality"
+          },
+          "craft_analysis": {
+            "type": "string",
+            "description": "Evaluation of craft quality (2-3 sentences in Czech)"
+          },
+          "craft_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["craft_evidence_timestamp", "craft_evidence_description", "craft_analysis", "craft_score"],
+        "additionalProperties": false
+      },
+      "final_scorecard": {
+        "type": "object",
+        "properties": {
+          "linkage_weighted_score": {
+            "type": "number",
+            "description": "linkage_score * 0.35"
+          },
+          "story_weighted_score": {
+            "type": "number",
+            "description": "story_score * 0.25"
+          },
+          "message_weighted_score": {
+            "type": "number",
+            "description": "message_score * 0.25"
+          },
+          "craft_weighted_score": {
+            "type": "number",
+            "description": "craft_score * 0.15"
+          },
+          "total_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5,
+            "description": "Sum of weighted scores (max 5.0)"
+          },
+          "total_percentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "(total_score / 5) * 100"
+          },
+          "linkage_verdict": {
+            "type": "string",
+            "description": "Brief comment on Linkage section (1 sentence in Czech)"
+          },
+          "story_verdict": {
+            "type": "string",
+            "description": "Brief comment on Story section (1 sentence in Czech)"
+          },
+          "message_verdict": {
+            "type": "string",
+            "description": "Brief comment on Message section (1 sentence in Czech)"
+          },
+          "craft_verdict": {
+            "type": "string",
+            "description": "Brief comment on Craft section (1 sentence in Czech)"
+          }
+        },
+        "required": [
+          "linkage_weighted_score",
+          "story_weighted_score",
+          "message_weighted_score",
+          "craft_weighted_score",
+          "total_score",
+          "total_percentage",
+          "linkage_verdict",
+          "story_verdict",
+          "message_verdict",
+          "craft_verdict"
+        ],
+        "additionalProperties": false
+      },
+      "action_plan": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "action_title": {
+              "type": "string",
+              "description": "Action name (e.g., 'Boost Linkage')"
+            },
+            "action_description": {
+              "type": "string",
+              "description": "Specific instructions including timestamps (in Czech)"
+            },
+            "priority": {
+              "type": "string",
+              "enum": ["high", "medium", "low"],
+              "description": "Priority level"
+            }
+          },
+          "required": ["action_title", "action_description", "priority"],
+          "additionalProperties": false
+        },
+        "minItems": 3,
+        "maxItems": 5,
+        "description": "3-5 concrete action steps for optimization"
+      }
+    },
+    "required": [
+      "analysis_metadata",
+      "section_a_linkage",
+      "section_b_story",
+      "section_c_message",
+      "section_d_craft",
+      "final_scorecard",
+      "action_plan"
+    ],
+    "additionalProperties": false
+  }
+}

@@ -1,0 +1,220 @@
+{
+  "tableName": "image_performance_analysis_test",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "analysis_metadata": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "description": "Brand name from context"
+          },
+          "category": {
+            "type": "string",
+            "description": "Product/service category"
+          },
+          "target_audience": {
+            "type": "string",
+            "description": "Target audience description"
+          },
+          "primary_message": {
+            "type": "string",
+            "description": "Primary message from context"
+          },
+          "secondary_messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Secondary messages from context"
+          }
+        },
+        "required": ["brand", "category", "target_audience", "primary_message"],
+        "additionalProperties": false
+      },
+      "section_a_attention": {
+        "type": "object",
+        "properties": {
+          "attention_evidence": {
+            "type": "string",
+            "description": "What the eye sees first + Brand elements"
+          },
+          "attention_analysis": {
+            "type": "string",
+            "description": "Evaluation of stop-power and branding (2-3 sentences in Czech)"
+          },
+          "attention_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["attention_evidence", "attention_analysis", "attention_score"],
+        "additionalProperties": false
+      },
+      "section_b_copy": {
+        "type": "object",
+        "properties": {
+          "copy_evidence": {
+            "type": "string",
+            "description": "Reading hierarchy (1. ..., 2. ...)"
+          },
+          "copy_analysis": {
+            "type": "string",
+            "description": "Evaluation of Primary vs. Secondary message delivery (2-3 sentences in Czech)"
+          },
+          "copy_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["copy_evidence", "copy_analysis", "copy_score"],
+        "additionalProperties": false
+      },
+      "section_c_offer": {
+        "type": "object",
+        "properties": {
+          "offer_evidence": {
+            "type": "string",
+            "description": "Visual/textual anchor of the offer"
+          },
+          "offer_analysis": {
+            "type": "string",
+            "description": "Evaluation of attractiveness (2-3 sentences in Czech)"
+          },
+          "offer_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["offer_evidence", "offer_analysis", "offer_score"],
+        "additionalProperties": false
+      },
+      "section_d_cta": {
+        "type": "object",
+        "properties": {
+          "cta_evidence": {
+            "type": "string",
+            "description": "Description of action element"
+          },
+          "cta_analysis": {
+            "type": "string",
+            "description": "Evaluation of click motivation (2-3 sentences in Czech)"
+          },
+          "cta_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["cta_evidence", "cta_analysis", "cta_score"],
+        "additionalProperties": false
+      },
+      "final_scorecard": {
+        "type": "object",
+        "properties": {
+          "attention_weighted_score": {
+            "type": "number",
+            "description": "attention_score * 0.3"
+          },
+          "copy_weighted_score": {
+            "type": "number",
+            "description": "copy_score * 0.3"
+          },
+          "offer_weighted_score": {
+            "type": "number",
+            "description": "offer_score * 0.2"
+          },
+          "cta_weighted_score": {
+            "type": "number",
+            "description": "cta_score * 0.2"
+          },
+          "total_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5,
+            "description": "Sum of weighted scores (max 5.0)"
+          },
+          "total_percentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "(total_score / 5) * 100"
+          },
+          "attention_verdict": {
+            "type": "string",
+            "description": "Brief comment on Attention section (1 sentence in Czech)"
+          },
+          "copy_verdict": {
+            "type": "string",
+            "description": "Brief comment on Copy section (1 sentence in Czech)"
+          },
+          "offer_verdict": {
+            "type": "string",
+            "description": "Brief comment on Offer section (1 sentence in Czech)"
+          },
+          "cta_verdict": {
+            "type": "string",
+            "description": "Brief comment on CTA section (1 sentence in Czech)"
+          }
+        },
+        "required": [
+          "attention_weighted_score",
+          "copy_weighted_score",
+          "offer_weighted_score",
+          "cta_weighted_score",
+          "total_score",
+          "total_percentage",
+          "attention_verdict",
+          "copy_verdict",
+          "offer_verdict",
+          "cta_verdict"
+        ],
+        "additionalProperties": false
+      },
+      "action_plan": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "action_title": {
+              "type": "string",
+              "description": "Action name (e.g., 'Boost Distinctiveness')"
+            },
+            "action_description": {
+              "type": "string",
+              "description": "Specific instructions (in Czech)"
+            },
+            "priority": {
+              "type": "string",
+              "enum": ["high", "medium", "low"],
+              "description": "Priority level"
+            }
+          },
+          "required": ["action_title", "action_description", "priority"],
+          "additionalProperties": false
+        },
+        "minItems": 3,
+        "maxItems": 5,
+        "description": "3-5 concrete action steps for optimization"
+      }
+    },
+    "required": [
+      "analysis_metadata",
+      "section_a_attention",
+      "section_b_copy",
+      "section_c_offer",
+      "section_d_cta",
+      "final_scorecard",
+      "action_plan"
+    ],
+    "additionalProperties": false
+  }
+}

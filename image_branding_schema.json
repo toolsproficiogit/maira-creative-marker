@@ -1,0 +1,220 @@
+{
+  "tableName": "image_branding_analysis_test",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "analysis_metadata": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "description": "Brand name from context"
+          },
+          "category": {
+            "type": "string",
+            "description": "Product/service category"
+          },
+          "target_audience": {
+            "type": "string",
+            "description": "Target audience description"
+          },
+          "primary_message": {
+            "type": "string",
+            "description": "Primary message from context"
+          },
+          "secondary_messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Secondary messages from context"
+          }
+        },
+        "required": ["brand", "category", "target_audience", "primary_message"],
+        "additionalProperties": false
+      },
+      "section_a_assets": {
+        "type": "object",
+        "properties": {
+          "assets_evidence": {
+            "type": "string",
+            "description": "List of identified Brand Codes"
+          },
+          "assets_analysis": {
+            "type": "string",
+            "description": "Evaluation of distinctiveness (2-3 sentences in Czech)"
+          },
+          "assets_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["assets_evidence", "assets_analysis", "assets_score"],
+        "additionalProperties": false
+      },
+      "section_b_emotion": {
+        "type": "object",
+        "properties": {
+          "emotion_evidence": {
+            "type": "string",
+            "description": "Description of atmosphere and emotional valence"
+          },
+          "emotion_analysis": {
+            "type": "string",
+            "description": "Evaluation of aesthetics (2-3 sentences in Czech)"
+          },
+          "emotion_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["emotion_evidence", "emotion_analysis", "emotion_score"],
+        "additionalProperties": false
+      },
+      "section_c_message": {
+        "type": "object",
+        "properties": {
+          "message_evidence": {
+            "type": "string",
+            "description": "Relationship between Text vs. Image"
+          },
+          "message_analysis": {
+            "type": "string",
+            "description": "Evaluation of message clarity (2-3 sentences in Czech)"
+          },
+          "message_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["message_evidence", "message_analysis", "message_score"],
+        "additionalProperties": false
+      },
+      "section_d_cep": {
+        "type": "object",
+        "properties": {
+          "cep_evidence": {
+            "type": "string",
+            "description": "Identified situation or category entry point"
+          },
+          "cep_analysis": {
+            "type": "string",
+            "description": "Evaluation of CEP relevance (2-3 sentences in Czech)"
+          },
+          "cep_score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Score 1-5"
+          }
+        },
+        "required": ["cep_evidence", "cep_analysis", "cep_score"],
+        "additionalProperties": false
+      },
+      "final_scorecard": {
+        "type": "object",
+        "properties": {
+          "assets_weighted_score": {
+            "type": "number",
+            "description": "assets_score * 0.35"
+          },
+          "emotion_weighted_score": {
+            "type": "number",
+            "description": "emotion_score * 0.25"
+          },
+          "message_weighted_score": {
+            "type": "number",
+            "description": "message_score * 0.25"
+          },
+          "cep_weighted_score": {
+            "type": "number",
+            "description": "cep_score * 0.15"
+          },
+          "total_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5,
+            "description": "Sum of weighted scores (max 5.0)"
+          },
+          "total_percentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "(total_score / 5) * 100"
+          },
+          "assets_verdict": {
+            "type": "string",
+            "description": "Brief comment on Distinctiveness section (1 sentence in Czech)"
+          },
+          "emotion_verdict": {
+            "type": "string",
+            "description": "Brief comment on Emotion section (1 sentence in Czech)"
+          },
+          "message_verdict": {
+            "type": "string",
+            "description": "Brief comment on Message section (1 sentence in Czech)"
+          },
+          "cep_verdict": {
+            "type": "string",
+            "description": "Brief comment on CEP section (1 sentence in Czech)"
+          }
+        },
+        "required": [
+          "assets_weighted_score",
+          "emotion_weighted_score",
+          "message_weighted_score",
+          "cep_weighted_score",
+          "total_score",
+          "total_percentage",
+          "assets_verdict",
+          "emotion_verdict",
+          "message_verdict",
+          "cep_verdict"
+        ],
+        "additionalProperties": false
+      },
+      "action_plan": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "action_title": {
+              "type": "string",
+              "description": "Action name (e.g., 'Asset Codification')"
+            },
+            "action_description": {
+              "type": "string",
+              "description": "Specific instructions (in Czech)"
+            },
+            "priority": {
+              "type": "string",
+              "enum": ["high", "medium", "low"],
+              "description": "Priority level"
+            }
+          },
+          "required": ["action_title", "action_description", "priority"],
+          "additionalProperties": false
+        },
+        "minItems": 3,
+        "maxItems": 5,
+        "description": "3-5 concrete action steps for optimization"
+      }
+    },
+    "required": [
+      "analysis_metadata",
+      "section_a_assets",
+      "section_b_emotion",
+      "section_c_message",
+      "section_d_cep",
+      "final_scorecard",
+      "action_plan"
+    ],
+    "additionalProperties": false
+  }
+}
