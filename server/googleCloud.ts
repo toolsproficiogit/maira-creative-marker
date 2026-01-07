@@ -15,6 +15,22 @@ export function getGoogleCloudCredentials() {
   let credentials;
   try {
     credentials = JSON.parse(credentialsJson);
+    
+    // Fix private_key to handle all possible newline encodings
+    if (credentials.private_key && typeof credentials.private_key === 'string') {
+      let privateKey = credentials.private_key;
+      
+      // If the key doesn't contain actual newlines, it needs fixing
+      if (!privateKey.includes('\n')) {
+        // Handle literal \n strings (most common case)
+        privateKey = privateKey.split('\\n').join('\n');
+      } else {
+        // Handle escaped newlines in JSON
+        privateKey = privateKey.replace(/\\n/g, '\n');
+      }
+      
+      credentials.private_key = privateKey;
+    }
   } catch (error) {
     throw new Error("Invalid GOOGLE_APPLICATION_CREDENTIALS_JSON format");
   }

@@ -20,6 +20,7 @@ import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import { generateSignedUploadUrl } from "./gcsStorage";
 import { ENV } from "./_core/env";
+import { testGcsConnection } from "./testGcs";
 
 const CONFIG_BUCKET = "video-analysis-config";
 
@@ -67,12 +68,25 @@ export const analysisRouter = router({
       const fileKey = `${ctx.user.id}/sessions/${input.sessionId}/${nanoid()}-${input.filename}`;
 
       // Generate signed URL
-      const { uploadUrl, publicUrl } = await generateSignedUploadUrl({
-        bucketName: ENV.gcsBucket,
-        fileKey,
-        contentType: input.contentType,
-        expiresIn: 900, // 15 minutes
-      });
+      let uploadUrl, publicUrl;
+      try {
+        const result = await generateSignedUploadUrl({
+          bucketName: ENV.gcsBucket,
+          fileKey,
+          contentType: input.contentType,
+          expiresIn: 900, // 15 minutes
+        });
+        uploadUrl = result.uploadUrl;
+        publicUrl = result.publicUrl;
+      } catch (error) {
+        console.error("[GCS Upload] Failed to generate signed URL:", error);
+        console.error("[GCS Upload] Bucket:", ENV.gcsBucket);
+        console.error("[GCS Upload] File key:", fileKey);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Failed to generate upload URL: ${error instanceof Error ? error.message : String(error)}`,
+        });
+      }
 
       return {
         uploadUrl,
@@ -298,5 +312,10 @@ export const analysisRouter = router({
 
   getDefaultConfig: protectedProcedure.query(() => {
     return getDefaultConfig();
+  }),
+
+  // Test GCS connection
+  testGcsConnection: protectedProcedure.mutation(async () => {
+    return await testGcsConnection();
   }),
 });

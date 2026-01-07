@@ -69,3 +69,14 @@
 - [x] Fix Configuration tab to display all 4 updated Czech prompts and schemas
 - [x] Verify configuration loading from external files works correctly
 - [x] Test that all 4 analysis combinations use the correct prompts
+
+## Upload Error Fix
+- [x] Diagnose "DECODER routines::unsupported" error in GCS upload
+- [x] Fix signed URL generation or upload mechanism
+- [ ] Test video upload with sample file
+
+## Upload Debugging
+- [x] Add better error logging to upload endpoint
+- [x] Verify GCS credentials and bucket access
+- [x] Implement robust private key format handling
+- [ ] Test upload in published production environment
