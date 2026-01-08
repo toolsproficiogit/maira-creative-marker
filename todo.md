@@ -80,3 +80,8 @@
 - [x] Verify GCS credentials and bucket access
 - [x] Implement robust private key format handling
 - [ ] Test upload in published production environment
+
+## Private Key Fix
+- [x] Implement Application Default Credentials with temp file
+- [x] Write credentials JSON to temp file at runtime
+- [ ] Test GCS upload in published production app

@@ -1,8 +1,40 @@
 import { ENV } from "./_core/env";
+import * as fs from "fs";
+import * as path from "path";
+import * as os from "os";
+
+let credentialsFilePath: string | null = null;
 
 /**
- * Get Google Cloud credentials from environment
+ * Write credentials JSON to a temporary file for Application Default Credentials
  */
+function writeCredentialsFile(credentialsJson: string): string {
+  if (credentialsFilePath && fs.existsSync(credentialsFilePath)) {
+    return credentialsFilePath;
+  }
+
+  try {
+    // Create temp directory if it doesn't exist
+    const tmpDir = path.join(os.tmpdir(), 'gcp-credentials');
+    if (!fs.existsSync(tmpDir)) {
+      fs.mkdirSync(tmpDir, { recursive: true });
+    }
+
+    // Write credentials to file
+    credentialsFilePath = path.join(tmpDir, 'credentials.json');
+    fs.writeFileSync(credentialsFilePath, credentialsJson, 'utf8');
+    
+    // Set environment variable for ADC
+    process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsFilePath;
+    
+    console.log('[GoogleCloud] Credentials file written to:', credentialsFilePath);
+    return credentialsFilePath;
+  } catch (error) {
+    console.error('[GoogleCloud] Failed to write credentials file:', error);
+    throw new Error('Failed to initialize Google Cloud credentials');
+  }
+}
+
 export function getGoogleCloudCredentials() {
   const projectId = ENV.googleCloudProject;
   const credentialsJson = ENV.googleApplicationCredentialsJson;
@@ -12,26 +44,15 @@ export function getGoogleCloudCredentials() {
     throw new Error("Missing required Google Cloud credentials");
   }
 
+  // Write credentials to file for ADC
+  writeCredentialsFile(credentialsJson);
+
+  // Parse credentials for direct use
   let credentials;
   try {
     credentials = JSON.parse(credentialsJson);
-    
-    // Fix private_key to handle all possible newline encodings
-    if (credentials.private_key && typeof credentials.private_key === 'string') {
-      let privateKey = credentials.private_key;
-      
-      // If the key doesn't contain actual newlines, it needs fixing
-      if (!privateKey.includes('\n')) {
-        // Handle literal \n strings (most common case)
-        privateKey = privateKey.split('\\n').join('\n');
-      } else {
-        // Handle escaped newlines in JSON
-        privateKey = privateKey.replace(/\\n/g, '\n');
-      }
-      
-      credentials.private_key = privateKey;
-    }
   } catch (error) {
+    console.error('[GoogleCloud] Failed to parse credentials JSON:', error);
     throw new Error("Invalid GOOGLE_APPLICATION_CREDENTIALS_JSON format");
   }
 
