@@ -92,3 +92,16 @@
 - [x] Write Cloud Run deployment guide in README.md
 - [x] Create deployment script
 - [x] Document environment variables setup
+
+## Prompt Management System
+- [x] Design prompt metadata schema (id, name, description, filetype, focus, etc.)
+- [ ] Update database schema for prompt storage
+- [x] Implement GCS prompt storage backend (save/load/list)
+- [x] Create React context for session-based prompt caching
+- [ ] Build prompt selector UI with fetch action
+- [ ] Build prompt editor UI (edit, update, create new)
+- [ ] Add prompt selection to file upload context fields
+- [ ] Implement role-based access for default prompts
+- [x] Add hardcoded fallback prompts
+- [ ] Add prompt validation and testing
+- [ ] Update README with prompt management documentation

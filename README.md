@@ -256,8 +256,62 @@ chmod +x deploy.sh
 ./deploy.sh
 ```
 
-## Configuration
+### Prompt Management System
 
+### Current Status
+
+**Backend Infrastructure (✅ Complete):**
+- GCS-based prompt storage (`gs://your-bucket/prompts/*.json`)
+- Prompt metadata schema with version control
+- tRPC API endpoints (list, get, create, update, delete)
+- React context for session-based caching
+- Role-based access control
+- Hardcoded default prompts as fallback
+
+**Frontend UI (⏳ Pending):**
+- Prompt selector with fetch action
+- Prompt editor (edit, update, create new)
+- Integration with file upload flow
+- Prompt testing and validation
+
+### How It Works
+
+A "prompt" is a triple of:
+1. **System Prompt**: Czech instructions for AI with variable substitution (`{brand}`, `{targetAudience}`, etc.)
+2. **Output Schema**: JSON structure with English field names for BigQuery
+3. **BigQuery Table**: Where results are stored
+
+Each prompt has metadata:
+- `id`: Unique identifier (e.g., `video_performance_v2`)
+- `name`: Human-readable name
+- `description`: What this prompt analyzes
+- `filetype`: `image` or `video`
+- `focus`: `branding` or `performance`
+- `isDefault`: Whether it's a system default (read-only for non-admins)
+- `version`: For optimistic locking
+
+### Current Behavior
+
+The application uses 4 hardcoded default Czech prompts:
+- `video_performance_default`
+- `video_branding_default`
+- `image_performance_default`
+- `image_branding_default`
+
+These are loaded from local files and used for all analysis. The backend infrastructure is ready for the full prompt management UI to be completed.
+
+### Future: Full Prompt Management
+
+When the UI is complete, users will be able to:
+1. **Fetch prompts** from GCS on session start
+2. **Edit prompts** in the Configuration tab
+3. **Create new versions** (e.g., `video_performance_v2`)
+4. **Select prompts per file** during upload
+5. **Test prompts** before saving
+
+Admins can update default prompts; regular users can only create custom versions.
+
+## Configuration
 ### System Prompts
 
 The application includes 4 default Czech system prompts:
