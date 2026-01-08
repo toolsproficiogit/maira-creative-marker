@@ -85,3 +85,10 @@
 - [x] Implement Application Default Credentials with temp file
 - [x] Write credentials JSON to temp file at runtime
 - [ ] Test GCS upload in published production app
+
+## Cloud Run Deployment
+- [x] Create Dockerfile for production build
+- [x] Create .dockerignore file
+- [x] Write Cloud Run deployment guide in README.md
+- [x] Create deployment script
+- [x] Document environment variables setup
