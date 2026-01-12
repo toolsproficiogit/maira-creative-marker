@@ -13,33 +13,14 @@ export default function AnalysisTool() {
   const { user, loading, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("tool");
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Maira Creative Marker</CardTitle>
-            <CardDescription>
-              Sign in to analyze your media files with AI
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <a href={getLoginUrl()}>Sign In</a>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Skip authentication check for standalone deployment
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center">
+  //       <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
