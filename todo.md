@@ -116,3 +116,7 @@
 - [ ] Redeploy to Cloud Run
 - [ ] Test deployed application
 - [x] Fix vite config import error in production (@builder.io/vite-plugin-jsx-loc)
+- [x] Investigate why esbuild still bundles vite despite code restructuring
+- [x] Test alternative bundling approach
+- [x] Add external flags to esbuild to exclude vite and plugins
+- [x] Test production build locally - works perfectly
