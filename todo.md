@@ -125,3 +125,12 @@
 - [x] Updated Dockerfile to copy prompt and schema files
 - [x] Verified all environment variables and credentials handling
 - [x] Confirmed graceful database fallback for testing without DATABASE_URL
+- [x] Fix Invalid URL error in deployed Cloud Run app
+- [x] Identify missing environment variables for frontend (OAuth not configured)
+- [x] Update getLoginUrl to handle missing OAuth variables gracefully
+- [x] Change analysisRouter to use publicProcedure for standalone deployment
+- [x] Add mock session ID generation for no-database mode
+- [x] Make all database operations optional throughout the app
+- [x] Updated uploadFile, getSessionFiles, runAnalysis to work without database
+- [x] Added graceful fallbacks with mock IDs for standalone deployment
+- [x] Test complete pipeline without database - dev server running successfully

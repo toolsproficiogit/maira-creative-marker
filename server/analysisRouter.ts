@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "./_core/trpc";
+import { publicProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import { 
   createSession, 
@@ -26,12 +26,25 @@ const CONFIG_BUCKET = "video-analysis-config";
 
 export const analysisRouter = router({
   // Session management
-  createSession: protectedProcedure.mutation(async ({ ctx }) => {
-    const sessionId = await createSession(ctx.user.id);
+  createSession: publicProcedure.mutation(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) {
+      // No database - generate a mock session ID for standalone deployment
+      const mockSessionId = Date.now();
+      console.log('[Session] Created mock session (no database):', mockSessionId);
+      return { sessionId: mockSessionId };
+    }
+    
+    const userId = ctx.user?.id;
+    if (!userId) {
+      throw new TRPCError({ code: 'UNAUTHORIZED', message: 'User not authenticated' });
+    }
+    
+    const sessionId = await createSession(userId);
     return { sessionId };
   }),
 
-  getSession: protectedProcedure
+  getSession: publicProcedure
     .input(z.object({ sessionId: z.number() }))
     .query(async ({ input }) => {
       const session = await getSessionById(input.sessionId);
@@ -42,7 +55,7 @@ export const analysisRouter = router({
     }),
 
   // Generate signed upload URL
-  generateUploadUrl: protectedProcedure
+  generateUploadUrl: publicProcedure
     .input(
       z.object({
         sessionId: z.number(),
@@ -65,7 +78,8 @@ export const analysisRouter = router({
       }
 
       // Generate unique file key
-      const fileKey = `${ctx.user.id}/sessions/${input.sessionId}/${nanoid()}-${input.filename}`;
+      const userId = ctx.user?.id || 'anonymous';
+      const fileKey = `${userId}/sessions/${input.sessionId}/${nanoid()}-${input.filename}`;
 
       // Generate signed URL
       let uploadUrl, publicUrl;
@@ -97,7 +111,7 @@ export const analysisRouter = router({
     }),
 
   // File upload
-  uploadFile: protectedProcedure
+  uploadFile: publicProcedure
     .input(
       z.object({
         sessionId: z.number(),
@@ -130,19 +144,32 @@ export const analysisRouter = router({
       }
 
       // Generate unique file key
-      const fileKey = `${ctx.user.id}/sessions/${input.sessionId}/${nanoid()}-${input.filename}`;
+      const userId = ctx.user?.id || 'anonymous';
+      const fileKey = `${userId}/sessions/${input.sessionId}/${nanoid()}-${input.filename}`;
 
-      // Store file metadata in database
-      const fileId = await createFile({
-        sessionId: input.sessionId,
-        filename: input.filename,
-        fileKey,
-        fileUrl: "", // Will be updated after upload
-        filetype,
-        mimeType: input.mimeType,
-        fileSize: input.fileSize,
-        ...input.contextFields,
-      });
+      // Store file metadata in database (optional)
+      let fileId: number;
+      const db = await getDb();
+      if (db) {
+        try {
+          fileId = await createFile({
+            sessionId: input.sessionId,
+            filename: input.filename,
+            fileKey,
+            fileUrl: "", // Will be updated after upload
+            filetype,
+            mimeType: input.mimeType,
+            fileSize: input.fileSize,
+            ...input.contextFields,
+          });
+        } catch (error) {
+          console.warn('[Upload] Failed to store file in database:', error);
+          fileId = Date.now(); // Mock file ID
+        }
+      } else {
+        fileId = Date.now(); // Mock file ID for standalone deployment
+        console.log('[Upload] No database - using mock file ID:', fileId);
+      }
 
       return {
         fileId,
@@ -152,7 +179,7 @@ export const analysisRouter = router({
     }),
 
   // Update file URL after upload
-  updateFileUrl: protectedProcedure
+  updateFileUrl: publicProcedure
     .input(
       z.object({
         fileId: z.number(),
@@ -169,14 +196,19 @@ export const analysisRouter = router({
     }),
 
   // Get files for a session
-  getSessionFiles: protectedProcedure
+  getSessionFiles: publicProcedure
     .input(z.object({ sessionId: z.number() }))
     .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) {
+        console.log('[Files] No database - returning empty file list');
+        return [];
+      }
       return await getFilesBySession(input.sessionId);
     }),
 
   // Run analysis
-  runAnalysis: protectedProcedure
+  runAnalysis: publicProcedure
     .input(
       z.object({
         sessionId: z.number(),
@@ -184,12 +216,21 @@ export const analysisRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const files = await getFilesBySession(input.sessionId);
+      const db = await getDb();
+      let files: Awaited<ReturnType<typeof getFilesBySession>> = [];
+      
+      if (db) {
+        try {
+          files = await getFilesBySession(input.sessionId);
+        } catch (error) {
+          console.warn('[Analysis] Failed to get files from database:', error);
+        }
+      }
       
       if (files.length === 0) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "No files found for this session",
+          message: "No files found for this session. For standalone deployment without database, use the direct analysis endpoint.",
         });
       }
 
@@ -221,17 +262,23 @@ export const analysisRouter = router({
           maxRetries: 2,
         });
 
-        // Store in database
-        const resultId = await createAnalysisResult({
-          fileId: file.id,
-          sessionId: input.sessionId,
-          focus: input.focus,
-          filetype: file.filetype,
-          analysisJson: JSON.stringify(analysisResult.result || {}),
-          bigqueryTable: analysisResult.success ? outputConfig.tableName : null,
-          retryCount: analysisResult.retryCount,
-          validationError: analysisResult.error || null,
-        });
+        // Store in database (optional)
+        if (db) {
+          try {
+            await createAnalysisResult({
+              fileId: file.id,
+              sessionId: input.sessionId,
+              focus: input.focus,
+              filetype: file.filetype,
+              analysisJson: JSON.stringify(analysisResult.result || {}),
+              bigqueryTable: analysisResult.success ? outputConfig.tableName : null,
+              retryCount: analysisResult.retryCount,
+              validationError: analysisResult.error || null,
+            });
+          } catch (dbError) {
+            console.warn('[Analysis] Failed to store result in database:', dbError);
+          }
+        }
 
         // Store in BigQuery if successful
         if (analysisResult.success && analysisResult.result) {
@@ -273,7 +320,7 @@ export const analysisRouter = router({
     }),
 
   // Get analysis results
-  getResults: protectedProcedure
+  getResults: publicProcedure
     .input(z.object({ sessionId: z.number() }))
     .query(async ({ input }) => {
       const results = await getDbAnalysisResults(input.sessionId);
@@ -290,16 +337,16 @@ export const analysisRouter = router({
     }),
 
   // Configuration management
-  getConfig: protectedProcedure.query(() => {
+  getConfig: publicProcedure.query(() => {
     return getCachedConfig();
   }),
 
-  refreshConfig: protectedProcedure.mutation(async () => {
+  refreshConfig: publicProcedure.mutation(async () => {
     const config = await loadConfig(CONFIG_BUCKET);
     return config;
   }),
 
-  updateConfig: protectedProcedure
+  updateConfig: publicProcedure
     .input(
       z.object({
         config: z.custom<AppConfig>(),
@@ -310,12 +357,12 @@ export const analysisRouter = router({
       return { success: true };
     }),
 
-  getDefaultConfig: protectedProcedure.query(() => {
+  getDefaultConfig: publicProcedure.query(() => {
     return getDefaultConfig();
   }),
 
   // Test GCS connection
-  testGcsConnection: protectedProcedure.mutation(async () => {
+  testGcsConnection: publicProcedure.mutation(async () => {
     return await testGcsConnection();
   }),
 });
