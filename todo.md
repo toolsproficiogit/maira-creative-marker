@@ -120,3 +120,8 @@
 - [x] Test alternative bundling approach
 - [x] Add external flags to esbuild to exclude vite and plugins
 - [x] Test production build locally - works perfectly
+- [x] Fix missing prompt files in Docker image (ENOENT error)
+- [x] Review all file dependencies for Docker deployment
+- [x] Updated Dockerfile to copy prompt and schema files
+- [x] Verified all environment variables and credentials handling
+- [x] Confirmed graceful database fallback for testing without DATABASE_URL
