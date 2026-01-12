@@ -115,3 +115,4 @@
 - [ ] Rebuild Docker image with fix
 - [ ] Redeploy to Cloud Run
 - [ ] Test deployed application
+- [x] Fix vite config import error in production (@builder.io/vite-plugin-jsx-loc)
