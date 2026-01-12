@@ -40,25 +40,37 @@ export function getGoogleCloudCredentials() {
   const credentialsJson = ENV.googleApplicationCredentialsJson;
   const dataset = ENV.bigqueryDataset;
 
-  if (!projectId || !credentialsJson || !dataset) {
-    throw new Error("Missing required Google Cloud credentials");
+  if (!projectId || !dataset) {
+    throw new Error("Missing required Google Cloud configuration (GOOGLE_CLOUD_PROJECT or BIGQUERY_DATASET)");
   }
 
-  // Write credentials to file for ADC
-  writeCredentialsFile(credentialsJson);
+  // If credentials JSON is provided, use it
+  if (credentialsJson) {
+    // Write credentials to file for ADC
+    writeCredentialsFile(credentialsJson);
 
-  // Parse credentials for direct use
-  let credentials;
-  try {
-    credentials = JSON.parse(credentialsJson);
-  } catch (error) {
-    console.error('[GoogleCloud] Failed to parse credentials JSON:', error);
-    throw new Error("Invalid GOOGLE_APPLICATION_CREDENTIALS_JSON format");
+    // Parse credentials for direct use
+    let credentials;
+    try {
+      credentials = JSON.parse(credentialsJson);
+    } catch (error) {
+      console.error('[GoogleCloud] Failed to parse credentials JSON:', error);
+      throw new Error("Invalid GOOGLE_APPLICATION_CREDENTIALS_JSON format");
+    }
+
+    return {
+      projectId,
+      credentials,
+      dataset,
+    };
   }
 
+  // Otherwise, use Application Default Credentials (ADC)
+  // This works automatically in Cloud Run with service account
+  console.log('[GoogleCloud] Using Application Default Credentials (service account)');
   return {
     projectId,
-    credentials,
+    credentials: undefined, // Let Google Cloud SDK use ADC
     dataset,
   };
 }

@@ -137,3 +137,9 @@
 - [x] Remove authentication checks from frontend pages
 - [x] Update AnalysisTool.tsx to skip authentication check
 - [x] Test UI loads and functions without authentication - working perfectly
+- [x] Fix missing Google Cloud credentials in Cloud Run deployment
+- [x] Update code to use Application Default Credentials (ADC)
+- [x] Make GOOGLE_APPLICATION_CREDENTIALS_JSON optional
+- [x] Updated googleCloud.ts, gcsStorage.ts, bigquery.ts, vertexAI.ts, promptStorage.ts, config.ts
+- [x] All Google Cloud clients now support ADC fallback
+- [x] Test with service account in Cloud Run - ready for deployment

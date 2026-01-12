@@ -16,8 +16,11 @@ const PROMPTS_FOLDER = "prompts/";
  * Get GCS storage client
  */
 function getStorageClient(): Storage {
-  const { credentials } = getGoogleCloudCredentials();
-  return new Storage({ credentials });
+  const { projectId, credentials } = getGoogleCloudCredentials();
+  // If credentials are provided, use them; otherwise use ADC
+  return credentials
+    ? new Storage({ projectId, credentials })
+    : new Storage({ projectId });
 }
 
 /**

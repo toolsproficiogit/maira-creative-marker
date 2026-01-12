@@ -23,10 +23,10 @@ export async function analyzeWithGemini(params: {
     prompt = prompt.replaceAll(placeholder, value);
   }
 
-  const client = new PredictionServiceClient({
-    credentials,
-    projectId,
-  });
+  // If credentials are provided, use them; otherwise use ADC
+  const client = credentials
+    ? new PredictionServiceClient({ credentials, projectId })
+    : new PredictionServiceClient({ projectId });
 
   const location = "us-central1";
   const model = "gemini-2.0-flash-001";

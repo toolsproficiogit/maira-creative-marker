@@ -9,10 +9,17 @@ let bigqueryClient: BigQuery | null = null;
 function getBigQueryClient(): BigQuery {
   if (!bigqueryClient) {
     const { projectId, credentials } = getGoogleCloudCredentials();
-    bigqueryClient = new BigQuery({
-      projectId,
-      credentials,
-    });
+    
+    // If credentials are provided, use them; otherwise use ADC
+    if (credentials) {
+      bigqueryClient = new BigQuery({
+        projectId,
+        credentials,
+      });
+    } else {
+      // Use Application Default Credentials (ADC)
+      bigqueryClient = new BigQuery({ projectId });
+    }
   }
   return bigqueryClient;
 }

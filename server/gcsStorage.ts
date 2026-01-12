@@ -9,10 +9,17 @@ let storageClient: Storage | null = null;
 function getStorageClient(): Storage {
   if (!storageClient) {
     const { projectId, credentials } = getGoogleCloudCredentials();
-    storageClient = new Storage({
-      projectId,
-      credentials,
-    });
+    
+    // If credentials are provided, use them; otherwise use ADC
+    if (credentials) {
+      storageClient = new Storage({
+        projectId,
+        credentials,
+      });
+    } else {
+      // Use Application Default Credentials (ADC)
+      storageClient = new Storage({ projectId });
+    }
   }
   return storageClient;
 }
