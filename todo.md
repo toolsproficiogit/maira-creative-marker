@@ -105,3 +105,7 @@
 - [x] Add hardcoded fallback prompts
 - [ ] Add prompt validation and testing
 - [ ] Update README with prompt management documentation
+
+## Dockerfile Build Fix
+- [x] Fix Dockerfile to build frontend (vite build) before copying dist
+- [ ] Test Docker build locally
