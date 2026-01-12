@@ -109,3 +109,9 @@
 ## Dockerfile Build Fix
 - [x] Fix Dockerfile to build frontend (vite build) before copying dist
 - [ ] Test Docker build locally
+
+## Cloud Run Deployment Error
+- [x] Fix Vite import error in production build (ERR_MODULE_NOT_FOUND)
+- [ ] Rebuild Docker image with fix
+- [ ] Redeploy to Cloud Run
+- [ ] Test deployed application
