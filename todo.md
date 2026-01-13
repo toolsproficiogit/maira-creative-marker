@@ -154,3 +154,8 @@
 - [x] Create comprehensive DEPLOYMENT.md guide
 - [x] Session cookie warnings are informational only (OAuth not used)
 - [ ] User must apply CORS to GCS bucket: gsutil cors set cors.json gs://maira-creative-marker
+- [x] Set up Cloud SQL MySQL instance
+- [x] Created DATABASE_SETUP.md with complete setup guide
+- [ ] User must create Cloud SQL instance and database
+- [ ] User must add DATABASE_URL to Cloud Run deployment
+- [ ] Test complete analysis pipeline with database
