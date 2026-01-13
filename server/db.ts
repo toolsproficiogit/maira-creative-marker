@@ -9,7 +9,43 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      const databaseUrl = process.env.DATABASE_URL;
+      
+      // Parse DATABASE_URL and handle SSL configuration
+      // mysql2 doesn't accept JSON string format for SSL, so we need to parse it
+      const url = new URL(databaseUrl.replace('mysql://', 'http://'));
+      const sslParam = url.searchParams.get('ssl');
+      
+      if (sslParam) {
+        // Remove SSL from URL and parse it separately
+        const cleanUrl = databaseUrl.replace(/[?&]ssl=[^&]*/, '');
+        
+        // Parse SSL configuration
+        let sslConfig: any = true; // Default to true for SSL
+        try {
+          // Try to parse as JSON
+          const parsed = JSON.parse(sslParam);
+          sslConfig = parsed;
+        } catch {
+          // If not JSON, treat as boolean or string
+          if (sslParam === 'true') sslConfig = true;
+          else if (sslParam === 'false') sslConfig = false;
+          else sslConfig = sslParam;
+        }
+        
+        // Create connection with parsed SSL config
+        const mysql = await import('mysql2');
+        const connection = mysql.createPool({
+          uri: cleanUrl,
+          ssl: sslConfig,
+        });
+        _db = drizzle(connection);
+      } else {
+        // No SSL parameter, use URL as-is
+        _db = drizzle(databaseUrl);
+      }
+      
+      console.log('[Database] Connected successfully');
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
