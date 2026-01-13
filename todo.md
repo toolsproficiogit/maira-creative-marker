@@ -149,3 +149,8 @@
 - [x] Fixed createSession to work without authentication
 - [x] Verified generateUploadUrl handles anonymous users
 - [x] Test complete upload pipeline end-to-end - ready for deployment
+- [x] Configure GCS bucket CORS for direct browser uploads
+- [x] Create cors.json configuration file
+- [x] Create comprehensive DEPLOYMENT.md guide
+- [x] Session cookie warnings are informational only (OAuth not used)
+- [ ] User must apply CORS to GCS bucket: gsutil cors set cors.json gs://maira-creative-marker
