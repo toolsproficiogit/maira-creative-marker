@@ -11,34 +11,43 @@ export async function getDb() {
     try {
       const databaseUrl = process.env.DATABASE_URL;
       
-      // Parse DATABASE_URL and handle SSL configuration
-      // mysql2 doesn't accept JSON string format for SSL, so we need to parse it
+      // Parse DATABASE_URL manually to handle SSL configuration
+      // mysql2 doesn't accept JSON string format for SSL in the URL
       const url = new URL(databaseUrl.replace('mysql://', 'http://'));
       const sslParam = url.searchParams.get('ssl');
       
       if (sslParam) {
-        // Remove SSL from URL and parse it separately
-        const cleanUrl = databaseUrl.replace(/[?&]ssl=[^&]*/, '');
-        
-        // Parse SSL configuration
-        let sslConfig: any = true; // Default to true for SSL
+        // Parse SSL configuration from query parameter
+        let sslConfig: any = true;
         try {
           // Try to parse as JSON
-          const parsed = JSON.parse(sslParam);
-          sslConfig = parsed;
+          sslConfig = JSON.parse(sslParam);
         } catch {
-          // If not JSON, treat as boolean or string
+          // If not JSON, treat as boolean
           if (sslParam === 'true') sslConfig = true;
           else if (sslParam === 'false') sslConfig = false;
-          else sslConfig = sslParam;
+          else sslConfig = true; // Default to true for any other value
         }
         
-        // Create connection with parsed SSL config
+        // Manually construct connection config
         const mysql = await import('mysql2');
-        const connection = mysql.createPool({
-          uri: cleanUrl,
+        const config: any = {
+          host: url.hostname,
+          port: url.port ? parseInt(url.port) : 3306,
+          user: decodeURIComponent(url.username),
+          password: decodeURIComponent(url.password),
+          database: url.pathname.slice(1), // Remove leading slash
           ssl: sslConfig,
+        };
+        
+        // Add any other query parameters
+        url.searchParams.forEach((value, key) => {
+          if (key !== 'ssl') {
+            config[key] = value;
+          }
         });
+        
+        const connection = mysql.createPool(config);
         _db = drizzle(connection);
       } else {
         // No SSL parameter, use URL as-is
