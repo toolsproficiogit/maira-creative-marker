@@ -37,7 +37,10 @@ export const analysisRouter = router({
     
     const userId = ctx.user?.id;
     if (!userId) {
-      throw new TRPCError({ code: 'UNAUTHORIZED', message: 'User not authenticated' });
+      // No user in standalone mode - generate mock session ID
+      const mockSessionId = Date.now();
+      console.log('[Session] Created mock session (no user):', mockSessionId);
+      return { sessionId: mockSessionId };
     }
     
     const sessionId = await createSession(userId);

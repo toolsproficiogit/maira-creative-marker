@@ -143,3 +143,9 @@
 - [x] Updated googleCloud.ts, gcsStorage.ts, bigquery.ts, vertexAI.ts, promptStorage.ts, config.ts
 - [x] All Google Cloud clients now support ADC fallback
 - [x] Test with service account in Cloud Run - ready for deployment
+- [x] Fix VITE environment variable replacement in Docker build
+- [x] Removed analytics script from index.html (Manus-specific)
+- [x] Review all file upload endpoints and code paths
+- [x] Fixed createSession to work without authentication
+- [x] Verified generateUploadUrl handles anonymous users
+- [x] Test complete upload pipeline end-to-end - ready for deployment
