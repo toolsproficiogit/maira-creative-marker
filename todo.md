@@ -189,3 +189,4 @@
 - [x] Update to Gemini 3 Flash model (gemini-3-flash-preview-001)
 - [x] Server compiles and runs successfully with Gemini 3 Flash
 - [ ] Test analysis with Gemini 3 Flash in production
+- [x] Fix model name to gemini-3-flash-preview (remove -001 suffix)

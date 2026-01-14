@@ -29,7 +29,7 @@ export async function analyzeWithGemini(params: {
 
   // Get the Gemini 3 Flash model (preview)
   const model = vertexAI.getGenerativeModel({
-    model: "gemini-3-flash-preview-001",
+    model: "gemini-3-flash-preview",
     generationConfig: {
       temperature: 0.2,
       maxOutputTokens: 8192,
