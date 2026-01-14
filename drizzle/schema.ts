@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { bigint, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -43,7 +43,7 @@ export type InsertSession = typeof sessions.$inferInsert;
  */
 export const files = mysqlTable("files", {
   id: int("id").autoincrement().primaryKey(),
-  sessionId: int("sessionId").notNull().references(() => sessions.id),
+  sessionId: bigint("sessionId", { mode: "number" }).notNull(),
   filename: varchar("filename", { length: 512 }).notNull(),
   fileKey: varchar("fileKey", { length: 1024 }).notNull(),
   fileUrl: text("fileUrl").notNull(),
@@ -72,7 +72,7 @@ export type InsertFile = typeof files.$inferInsert;
 export const analysisResults = mysqlTable("analysisResults", {
   id: int("id").autoincrement().primaryKey(),
   fileId: int("fileId").notNull().references(() => files.id),
-  sessionId: int("sessionId").notNull().references(() => sessions.id),
+  sessionId: bigint("sessionId", { mode: "number" }).notNull(),
   
   // Analysis metadata
   focus: mysqlEnum("focus", ["branding", "performance"]).notNull(),

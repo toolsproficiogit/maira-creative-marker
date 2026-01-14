@@ -27,7 +27,11 @@ interface UploadedFile {
 }
 
 export default function ToolUseSection() {
-  const [sessionId, setSessionId] = useState<number | null>(null);
+  // Persist session ID in localStorage to prevent regeneration on tab switch
+  const [sessionId, setSessionId] = useState<number | null>(() => {
+    const stored = localStorage.getItem('analysisSessionId');
+    return stored ? parseInt(stored, 10) : null;
+  });
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [focus, setFocus] = useState<"branding" | "performance">("branding");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -42,17 +46,20 @@ export default function ToolUseSection() {
   const { data: configData } = trpc.analysis.getConfig.useQuery();
 
   useEffect(() => {
-    // Create session on mount
-    createSessionMutation.mutate(undefined, {
-      onSuccess: (data) => {
-        setSessionId(data.sessionId);
-        toast.success("Session created");
-      },
-      onError: (error) => {
-        toast.error(`Failed to create session: ${error.message}`);
-      },
-    });
-  }, []);
+    // Create session only if we don't have one
+    if (!sessionId) {
+      createSessionMutation.mutate(undefined, {
+        onSuccess: (data) => {
+          setSessionId(data.sessionId);
+          localStorage.setItem('analysisSessionId', data.sessionId.toString());
+          toast.success("Session created");
+        },
+        onError: (error) => {
+          toast.error(`Failed to create session: ${error.message}`);
+        },
+      });
+    }
+  }, [sessionId]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);

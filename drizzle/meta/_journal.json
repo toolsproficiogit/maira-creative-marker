@@ -15,6 +15,13 @@
       "when": 1766405535206,
       "tag": "0001_icy_spencer_smythe",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1768379699243,
+      "tag": "0002_adorable_master_mold",
+      "breakpoints": true
     }
   ]
 }

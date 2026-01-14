@@ -174,3 +174,10 @@
 - [ ] User must create bucket and upload default prompts
 - [ ] User must apply CORS configuration
 - [ ] Test prompt editing functionality
+- [x] Change sessionId column from INT to BIGINT in database schema
+- [x] Updated files and analysisResults tables to use bigint for sessionId
+- [x] Ran pnpm db:push to apply migration successfully
+- [x] Fix frontend session persistence in localStorage
+- [x] Session ID now persists across tab switches
+- [x] Session only created once on first load
+- [ ] Test complete upload and analysis pipeline in production
