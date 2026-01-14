@@ -181,3 +181,8 @@
 - [x] Session ID now persists across tab switches
 - [x] Session only created once on first load
 - [ ] Test complete upload and analysis pipeline in production
+- [x] Install @google-cloud/vertexai package
+- [x] Update vertexAI.ts to use generateContent API instead of predict
+- [x] Switch to Gemini 2.0 Flash model (gemini-2.0-flash-001)
+- [x] Server compiles and runs successfully with new SDK
+- [ ] Test complete analysis pipeline in production

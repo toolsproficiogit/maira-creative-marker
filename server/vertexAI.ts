@@ -1,11 +1,8 @@
-import { PredictionServiceClient } from "@google-cloud/aiplatform";
-import { google } from "@google-cloud/aiplatform/build/protos/protos";
+import { VertexAI } from "@google-cloud/vertexai";
 import { getGoogleCloudCredentials } from "./googleCloud";
 
-type IValue = google.protobuf.IValue;
-
 /**
- * Call Vertex AI Gemini API for video/image analysis
+ * Call Vertex AI Gemini API for video/image analysis using the new SDK
  */
 export async function analyzeWithGemini(params: {
   fileUrl: string;
@@ -23,91 +20,59 @@ export async function analyzeWithGemini(params: {
     prompt = prompt.replaceAll(placeholder, value);
   }
 
-  // If credentials are provided, use them; otherwise use ADC
-  const client = credentials
-    ? new PredictionServiceClient({ credentials, projectId })
-    : new PredictionServiceClient({ projectId });
+  // Initialize Vertex AI with credentials or ADC
+  const vertexAI = new VertexAI({
+    project: projectId,
+    location: "us-central1",
+    googleAuthOptions: credentials ? { credentials } : undefined,
+  });
 
-  const location = "us-central1";
-  const model = "gemini-2.0-flash-001";
-  const endpoint = `projects/${projectId}/locations/${location}/publishers/google/models/${model}`;
+  // Get the Gemini model
+  const model = vertexAI.getGenerativeModel({
+    model: "gemini-2.0-flash-001",
+    generationConfig: {
+      temperature: 0.2,
+      maxOutputTokens: 8192,
+    },
+  });
 
   // Prepare the request with file and prompt
-  const fileData: IValue = {
-    structValue: {
-      fields: {
-        mimeType: { stringValue: mimeType },
-        fileUri: { stringValue: fileUrl },
-      },
-    },
-  };
-
-  const textData: IValue = {
-    stringValue: prompt,
-  };
-
-  const instance: IValue = {
-    structValue: {
-      fields: {
-        contents: {
-          listValue: {
-            values: [
-              {
-                structValue: {
-                  fields: {
-                    role: { stringValue: "user" },
-                    parts: {
-                      listValue: {
-                        values: [fileData, textData],
-                      },
-                    },
-                  },
-                },
-              },
-            ],
-          },
-        },
-      },
-    },
-  };
-
-  const parameters: IValue = {
-    structValue: {
-      fields: {
-        temperature: { numberValue: 0.2 },
-        maxOutputTokens: { numberValue: 8192 },
-      },
-    },
-  };
-
   const request = {
-    endpoint,
-    instances: [instance],
-    parameters,
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            fileData: {
+              mimeType: mimeType,
+              fileUri: fileUrl,
+            },
+          },
+          {
+            text: prompt,
+          },
+        ],
+      },
+    ],
   };
 
-  const [response] = await client.predict(request);
+  // Call generateContent API
+  const response = await model.generateContent(request);
 
-  if (!response.predictions || response.predictions.length === 0) {
-    throw new Error("No predictions returned from Vertex AI");
-  }
-
-  const prediction = response.predictions[0];
-  const structValue = prediction?.structValue;
+  // Extract text from response
+  const result = response.response;
   
-  if (!structValue?.fields?.candidates?.listValue?.values?.[0]) {
-    throw new Error("Invalid response structure from Vertex AI");
+  if (!result.candidates || result.candidates.length === 0) {
+    throw new Error("No candidates returned from Vertex AI");
   }
 
-  const candidate = structValue.fields.candidates.listValue.values[0];
-  const content = candidate?.structValue?.fields?.content?.structValue;
-  const parts = content?.fields?.parts?.listValue?.values;
-
-  if (!parts || parts.length === 0) {
+  const candidate = result.candidates[0];
+  
+  if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
     throw new Error("No content parts in Vertex AI response");
   }
 
-  const textPart = parts[0]?.structValue?.fields?.text?.stringValue;
+  const textPart = candidate.content.parts[0].text;
   
   if (!textPart) {
     throw new Error("No text content in Vertex AI response");
