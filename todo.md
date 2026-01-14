@@ -169,3 +169,8 @@
 - [x] Convert boolean SSL values to { rejectUnauthorized: true }
 - [x] Enable Express trust proxy for Cloud Run
 - [x] Test both fixes - database connects successfully
+- [x] Create GCS bucket for prompt storage
+- [x] Created PROMPT_BUCKET_SETUP.md with complete setup guide
+- [ ] User must create bucket and upload default prompts
+- [ ] User must apply CORS configuration
+- [ ] Test prompt editing functionality
