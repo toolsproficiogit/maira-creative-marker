@@ -193,3 +193,7 @@
 - [x] Switch to Gemini 2.5 Flash stable model (gemini-2.5-flash-002)
 - [x] Server compiles and runs successfully with Gemini 2.5 Flash
 - [ ] Test analysis with stable Gemini 2.5 Flash in production
+- [x] Add GEMINI_MODEL environment variable to vertexAI.ts
+- [x] Set default to gemini-2.5-flash-002
+- [x] Added logging to show which model is being used
+- [x] Server compiles and runs successfully

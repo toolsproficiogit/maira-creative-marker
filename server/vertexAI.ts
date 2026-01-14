@@ -27,9 +27,12 @@ export async function analyzeWithGemini(params: {
     googleAuthOptions: credentials ? { credentials } : undefined,
   });
 
-  // Get the Gemini 2.5 Flash model (stable)
+  // Get the Gemini model (configurable via GEMINI_MODEL env var)
+  const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash-002";
+  console.log(`[Vertex AI] Using model: ${modelName}`);
+  
   const model = vertexAI.getGenerativeModel({
-    model: "gemini-2.5-flash-002",
+    model: modelName,
     generationConfig: {
       temperature: 0.2,
       maxOutputTokens: 8192,
