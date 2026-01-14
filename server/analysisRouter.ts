@@ -216,6 +216,7 @@ export const analysisRouter = router({
       z.object({
         sessionId: z.number(),
         focus: z.enum(["branding", "performance"]),
+        fileIds: z.array(z.number()).optional(), // Optional: specific files to analyze
       })
     )
     .mutation(async ({ input }) => {
@@ -224,7 +225,13 @@ export const analysisRouter = router({
       
       if (db) {
         try {
-          files = await getFilesBySession(input.sessionId);
+          const allFiles = await getFilesBySession(input.sessionId);
+          // Filter by fileIds if provided
+          if (input.fileIds && input.fileIds.length > 0) {
+            files = allFiles.filter(f => input.fileIds!.includes(f.id));
+          } else {
+            files = allFiles;
+          }
         } catch (error) {
           console.warn('[Analysis] Failed to get files from database:', error);
         }

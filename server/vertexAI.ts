@@ -2,6 +2,30 @@ import { VertexAI } from "@google-cloud/vertexai";
 import { getGoogleCloudCredentials } from "./googleCloud";
 
 /**
+ * Convert HTTP GCS URL to gs:// URI
+ * Vertex AI requires gs:// format for direct bucket access
+ */
+function convertToGsUri(url: string): string {
+  // Match patterns like:
+  // https://storage.googleapis.com/bucket-name/path/to/file
+  // https://storage.cloud.google.com/bucket-name/path/to/file
+  const match = url.match(/https:\/\/storage\.(googleapis|cloud\.google)\.com\/([^\/]+)\/(.+)/);
+  
+  if (match) {
+    const bucketName = match[2];
+    const objectPath = match[3];
+    return `gs://${bucketName}/${objectPath}`;
+  }
+  
+  // If already gs:// format, return as-is
+  if (url.startsWith('gs://')) {
+    return url;
+  }
+  
+  throw new Error(`Unable to convert URL to gs:// format: ${url}`);
+}
+
+/**
  * Call Vertex AI Gemini API for video/image analysis using the new SDK
  */
 export async function analyzeWithGemini(params: {
@@ -12,6 +36,10 @@ export async function analyzeWithGemini(params: {
 }): Promise<string> {
   const { projectId, credentials } = getGoogleCloudCredentials();
   const { fileUrl, mimeType, systemPrompt, contextFields } = params;
+  
+  // Convert HTTP URL to gs:// URI for Vertex AI
+  const gsUri = convertToGsUri(fileUrl);
+  console.log(`[Vertex AI] Converted ${fileUrl} to ${gsUri}`);
 
   // Replace template variables in system prompt
   let prompt = systemPrompt;
@@ -48,7 +76,7 @@ export async function analyzeWithGemini(params: {
           {
             fileData: {
               mimeType: mimeType,
-              fileUri: fileUrl,
+              fileUri: gsUri,
             },
           },
           {

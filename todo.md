@@ -197,3 +197,23 @@
 - [x] Set default to gemini-2.5-flash-002
 - [x] Added logging to show which model is being used
 - [x] Server compiles and runs successfully
+
+## Bug Fixes and UI Improvements (Current Session)
+
+- [x] Fix Vertex AI URL error - use gs:// URIs instead of HTTP URLs for file references
+- [x] Added convertToGsUri() helper function to convert HTTP URLs to gs:// format
+- [x] Added logging to show URL conversion
+- [x] Fix tab switching removing upload data - preserve state between Tool Use and Configuration tabs
+- [x] Separated pending files (with File objects) from uploaded files (from database)
+- [x] Added getSessionFiles query to fetch uploaded files on component mount
+- [x] Pending files cleared after successful upload, uploaded files fetched from backend
+- [x] Updated UI to show pending files (orange) and uploaded files (green) separately
+- [x] Add upload progress indicator during file upload
+- [x] Shows current file being uploaded and progress (X of Y)
+- [x] Add list of uploaded files in session with file details
+- [x] Add file selection checkboxes before running analysis
+- [x] Show all files from current session in Run Analysis section
+- [x] Allow users to select/unselect specific files for analysis
+- [x] Added Select All / Deselect All buttons
+- [x] Updated runAnalysis endpoint to accept optional fileIds parameter
+- [x] Button shows count of selected files

@@ -32,7 +32,11 @@ export default function ToolUseSection() {
     const stored = localStorage.getItem('analysisSessionId');
     return stored ? parseInt(stored, 10) : null;
   });
+  
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<UploadedFile[]>([]); // Files selected but not yet uploaded
+  const [selectedFileIds, setSelectedFileIds] = useState<Set<number>>(new Set()); // Files selected for analysis
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number; fileName: string } | null>(null);
   const [focus, setFocus] = useState<"branding" | "performance">("branding");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<any[]>([]);
@@ -44,6 +48,10 @@ export default function ToolUseSection() {
   const updateFileUrlMutation = trpc.analysis.updateFileUrl.useMutation();
   const runAnalysisMutation = trpc.analysis.runAnalysis.useMutation();
   const { data: configData } = trpc.analysis.getConfig.useQuery();
+  const { data: sessionFiles, refetch: refetchSessionFiles } = trpc.analysis.getSessionFiles.useQuery(
+    { sessionId: sessionId! },
+    { enabled: !!sessionId }
+  );
 
   useEffect(() => {
     // Create session only if we don't have one
@@ -60,6 +68,34 @@ export default function ToolUseSection() {
       });
     }
   }, [sessionId]);
+  
+  // Load uploaded files from session when component mounts or session changes
+  useEffect(() => {
+    if (sessionFiles && sessionFiles.length > 0) {
+      // Convert database files to UploadedFile format (without File objects)
+      const existingFiles: UploadedFile[] = sessionFiles.map(f => ({
+        file: null as any, // File object not available after upload
+        fileId: f.id,
+        filetype: f.filetype,
+        contextFields: {
+          brand: f.brand,
+          targetAudience: f.targetAudience,
+          category: f.category,
+          primaryMessage: f.primaryMessage,
+          secondaryMessage1: f.secondaryMessage1,
+          secondaryMessage2: f.secondaryMessage2,
+          version: f.version || "",
+        },
+      }));
+      setUploadedFiles(existingFiles);
+      
+      // Select all files by default
+      const allFileIds = existingFiles.map(f => f.fileId!).filter(id => id !== undefined);
+      setSelectedFileIds(new Set(allFileIds));
+    }
+  }, [sessionFiles]);
+
+
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -75,20 +111,20 @@ export default function ToolUseSection() {
         version: "",
       },
     }));
-    setUploadedFiles([...uploadedFiles, ...newFiles]);
+    setPendingFiles([...pendingFiles, ...newFiles]);
   };
 
   const updateContextField = (index: number, field: string, value: string) => {
-    const updated = [...uploadedFiles];
+    const updated = [...pendingFiles];
     updated[index].contextFields = {
       ...updated[index].contextFields,
       [field]: value,
     };
-    setUploadedFiles(updated);
+    setPendingFiles(updated);
   };
 
   const removeFile = (index: number) => {
-    setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
+    setPendingFiles(pendingFiles.filter((_, i) => i !== index));
   };
 
   const handleUploadAll = async () => {
@@ -96,27 +132,37 @@ export default function ToolUseSection() {
       toast.error("No active session");
       return;
     }
+    
+    if (pendingFiles.length === 0) {
+      toast.info("No files to upload");
+      return;
+    }
 
-    for (let i = 0; i < uploadedFiles.length; i++) {
-      const uploadedFile = uploadedFiles[i];
+    for (let i = 0; i < pendingFiles.length; i++) {
+      const pendingFile = pendingFiles[i];
       
-      if (uploadedFile.fileId) continue; // Already uploaded
+      // Update progress
+      setUploadProgress({
+        current: i + 1,
+        total: pendingFiles.length,
+        fileName: pendingFile.file.name,
+      });
 
       try {
         // Step 1: Generate signed upload URL
         const urlData = await generateUploadUrlMutation.mutateAsync({
           sessionId,
-          filename: uploadedFile.file.name,
-          contentType: uploadedFile.file.type,
+          filename: pendingFile.file.name,
+          contentType: pendingFile.file.type,
         });
 
         // Step 2: Upload file directly to GCS using signed URL
         const uploadResponse = await fetch(urlData.uploadUrl, {
           method: "PUT",
           headers: {
-            "Content-Type": uploadedFile.file.type,
+            "Content-Type": pendingFile.file.type,
           },
-          body: uploadedFile.file,
+          body: pendingFile.file,
         });
 
         if (!uploadResponse.ok) {
@@ -126,10 +172,10 @@ export default function ToolUseSection() {
         // Step 3: Create file metadata record
         const metadata = await uploadFileMutation.mutateAsync({
           sessionId,
-          filename: uploadedFile.file.name,
-          mimeType: uploadedFile.file.type,
-          fileSize: uploadedFile.file.size,
-          contextFields: uploadedFile.contextFields,
+          filename: pendingFile.file.name,
+          mimeType: pendingFile.file.type,
+          fileSize: pendingFile.file.size,
+          contextFields: pendingFile.contextFields,
         });
 
         // Step 4: Update file record with public URL
@@ -138,17 +184,35 @@ export default function ToolUseSection() {
           fileUrl: urlData.publicUrl,
         });
 
-        // Update UI
-        const updated = [...uploadedFiles];
-        updated[i].fileId = metadata.fileId;
-        updated[i].filetype = metadata.filetype;
-        setUploadedFiles(updated);
-
-        toast.success(`Uploaded: ${uploadedFile.file.name}`);
+        toast.success(`Uploaded: ${pendingFile.file.name}`);
       } catch (error: any) {
-        toast.error(`Failed to upload ${uploadedFile.file.name}: ${error.message}`);
+        toast.error(`Failed to upload ${pendingFile.file.name}: ${error.message}`);
       }
     }
+    
+    // Clear pending files, progress, and refetch session files
+    setPendingFiles([]);
+    setUploadProgress(null);
+    await refetchSessionFiles();
+  };
+  
+  const toggleFileSelection = (fileId: number) => {
+    const newSelected = new Set(selectedFileIds);
+    if (newSelected.has(fileId)) {
+      newSelected.delete(fileId);
+    } else {
+      newSelected.add(fileId);
+    }
+    setSelectedFileIds(newSelected);
+  };
+  
+  const selectAllFiles = () => {
+    const allFileIds = uploadedFiles.map(f => f.fileId!).filter(id => id !== undefined);
+    setSelectedFileIds(new Set(allFileIds));
+  };
+  
+  const deselectAllFiles = () => {
+    setSelectedFileIds(new Set());
   };
 
   const handleRunAnalysis = async () => {
@@ -156,10 +220,14 @@ export default function ToolUseSection() {
       toast.error("No active session");
       return;
     }
-
-    const allUploaded = uploadedFiles.every((f) => f.fileId);
-    if (!allUploaded) {
-      toast.error("Please upload all files first");
+    
+    if (pendingFiles.length > 0) {
+      toast.error("Please upload all pending files first");
+      return;
+    }
+    
+    if (selectedFileIds.size === 0) {
+      toast.error("Please select at least one file to analyze");
       return;
     }
 
@@ -168,6 +236,7 @@ export default function ToolUseSection() {
       const result = await runAnalysisMutation.mutateAsync({
         sessionId,
         focus,
+        fileIds: Array.from(selectedFileIds),
       });
 
       setResults(result.results);
@@ -251,17 +320,16 @@ export default function ToolUseSection() {
             />
           </div>
 
-          {uploadedFiles.length > 0 && (
+          {/* Pending files (not yet uploaded) */}
+          {pendingFiles.length > 0 && (
             <div className="space-y-4">
-              {uploadedFiles.map((uploadedFile, index) => (
-                <Card key={index}>
+              <h3 className="text-sm font-semibold text-muted-foreground">Pending Upload</h3>
+              {pendingFiles.map((pendingFile, index) => (
+                <Card key={`pending-${index}`} className="border-orange-200 bg-orange-50/50">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base">
-                        {uploadedFile.file.name}
-                        {uploadedFile.fileId && (
-                          <CheckCircle2 className="inline-block ml-2 h-4 w-4 text-green-600" />
-                        )}
+                        {pendingFile.file.name}
                       </CardTitle>
                       <Button
                         variant="ghost"
@@ -272,27 +340,26 @@ export default function ToolUseSection() {
                       </Button>
                     </div>
                     <CardDescription>
-                      {(uploadedFile.file.size / 1024 / 1024).toFixed(2)} MB
-                      {uploadedFile.filetype && ` • ${uploadedFile.filetype}`}
+                      {(pendingFile.file.size / 1024 / 1024).toFixed(2)} MB
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-4">
                     {configData?.contextFields.map((field) => (
                       <div key={field.name}>
-                        <Label htmlFor={`${index}-${field.name}`}>
+                        <Label htmlFor={`pending-${index}-${field.name}`}>
                           {field.label} {field.required && <span className="text-red-500">*</span>}
                         </Label>
                         {field.type === "textarea" ? (
                           <Textarea
-                            id={`${index}-${field.name}`}
-                            value={uploadedFile.contextFields[field.name as keyof typeof uploadedFile.contextFields] || ""}
+                            id={`pending-${index}-${field.name}`}
+                            value={pendingFile.contextFields[field.name as keyof typeof pendingFile.contextFields] || ""}
                             onChange={(e) => updateContextField(index, field.name, e.target.value)}
                             required={field.required}
                           />
                         ) : (
                           <Input
-                            id={`${index}-${field.name}`}
-                            value={uploadedFile.contextFields[field.name as keyof typeof uploadedFile.contextFields] || ""}
+                            id={`pending-${index}-${field.name}`}
+                            value={pendingFile.contextFields[field.name as keyof typeof pendingFile.contextFields] || ""}
                             onChange={(e) => updateContextField(index, field.name, e.target.value)}
                             required={field.required}
                           />
@@ -303,10 +370,43 @@ export default function ToolUseSection() {
                 </Card>
               ))}
 
-              <Button onClick={handleUploadAll} disabled={!sessionId} className="w-full">
+              <Button onClick={handleUploadAll} disabled={!sessionId || uploadProgress !== null} className="w-full">
                 <Upload className="mr-2 h-4 w-4" />
-                Upload All Files
+                {uploadProgress ? `Uploading ${uploadProgress.current}/${uploadProgress.total}...` : `Upload ${pendingFiles.length} File${pendingFiles.length > 1 ? 's' : ''}`}
               </Button>
+              
+              {/* Upload progress indicator */}
+              {uploadProgress && (
+                <Alert>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <AlertDescription>
+                    Uploading file {uploadProgress.current} of {uploadProgress.total}: <strong>{uploadProgress.fileName}</strong>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          )}
+          
+          {/* Uploaded files (already in GCS) */}
+          {uploadedFiles.length > 0 && (
+            <div className="space-y-4 mt-6">
+              <h3 className="text-sm font-semibold text-green-700">✓ Uploaded Files ({uploadedFiles.length})</h3>
+              {uploadedFiles.map((uploadedFile, index) => (
+                <Card key={`uploaded-${uploadedFile.fileId}`} className="border-green-200 bg-green-50/50">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        File #{uploadedFile.fileId}
+                      </CardTitle>
+                      <span className="text-sm text-muted-foreground">{uploadedFile.filetype}</span>
+                    </div>
+                    <CardDescription>
+                      {uploadedFile.contextFields.brand} • {uploadedFile.contextFields.category}
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              ))}
             </div>
           )}
         </CardContent>
@@ -317,10 +417,53 @@ export default function ToolUseSection() {
         <CardHeader>
           <CardTitle>Run Analysis</CardTitle>
           <CardDescription>
-            Select focus and analyze all uploaded files
+            Select files and focus to analyze
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* File selection */}
+          {uploadedFiles.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label>Select Files to Analyze</Label>
+                <div className="space-x-2">
+                  <Button variant="ghost" size="sm" onClick={selectAllFiles}>
+                    Select All
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={deselectAllFiles}>
+                    Deselect All
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
+                {uploadedFiles.map((uploadedFile) => (
+                  <label
+                    key={uploadedFile.fileId}
+                    className="flex items-start gap-3 p-2 rounded hover:bg-accent cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedFileIds.has(uploadedFile.fileId!)}
+                      onChange={() => toggleFileSelection(uploadedFile.fileId!)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm">File #{uploadedFile.fileId}</div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {uploadedFile.contextFields.brand} • {uploadedFile.contextFields.category} • {uploadedFile.filetype}
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              
+              <div className="text-sm text-muted-foreground">
+                {selectedFileIds.size} of {uploadedFiles.length} files selected
+              </div>
+            </div>
+          )}
+          
           <div>
             <Label htmlFor="focus">Analysis Focus</Label>
             <Select value={focus} onValueChange={(v: any) => setFocus(v)}>
@@ -336,7 +479,7 @@ export default function ToolUseSection() {
 
           <Button
             onClick={handleRunAnalysis}
-            disabled={isAnalyzing || uploadedFiles.length === 0 || !uploadedFiles.every((f) => f.fileId)}
+            disabled={isAnalyzing || selectedFileIds.size === 0 || pendingFiles.length > 0}
             className="w-full"
           >
             {isAnalyzing ? (
@@ -347,7 +490,7 @@ export default function ToolUseSection() {
             ) : (
               <>
                 <Play className="mr-2 h-4 w-4" />
-                Run Analysis
+                Run Analysis on {selectedFileIds.size} File{selectedFileIds.size !== 1 ? 's' : ''}
               </>
             )}
           </Button>
