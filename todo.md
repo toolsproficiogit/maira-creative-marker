@@ -236,3 +236,52 @@
 - [x] Updated ensureTableExists to use schema.properties instead of top-level schema keys
 - [x] Fixed TypeScript errors in schema processing
 - [x] Ensure Action Plan is properly formatted for both UI display and BigQuery storage
+
+## Configuration Update - BigQuery Dataset
+
+- [x] Update BigQuery target dataset to creative_marker
+- [x] Confirmed dataset is configured via BIGQUERY_DATASET env var
+- [x] User will update env var on their side, no code changes needed
+- [x] Verify dataset name is used consistently across all BigQuery operations
+
+## Phase 1: Prompt Management System
+
+### Database Schema
+- [x] Reviewed existing GCS-based prompt system (better than database-only)
+- [x] Removed duplicate database tables (prompts, promptVersions)
+- [x] Kept settings table for future bucket configuration
+- [x] Run pnpm db:push to apply schema changes
+
+### Backend CRUD Operations
+- [x] Existing promptRouter already implements all CRUD operations
+- [x] list endpoint - lists all prompts from GCS with fallback to defaults
+- [x] get endpoint - gets specific prompt by ID
+- [x] create endpoint - creates new custom prompts
+- [x] update endpoint - updates prompts with version conflict detection
+- [x] delete endpoint - deletes custom prompts (not defaults)
+- [x] initializeDefaults endpoint - copies hardcoded defaults to GCS
+
+### Configuration Page UI
+- [x] Rewrote ConfigurationSection component for new prompt system
+- [x] Build prompt list view showing all available prompts
+- [x] Build prompt editor with tabs (System Prompt, Output Schema, Metadata)
+- [x] Add save/reset buttons with optimistic locking
+- [x] Show GCS connection status and prompt count
+- [x] Add Initialize Defaults button for first-time setup
+- [x] Display prompt metadata (version, creator, default flag)
+- [x] Add permission checks for default prompts (admin-only)
+
+### GCS Bucket Configuration
+- [x] Created comprehensive GCS_BUCKET_SETUP.md documentation
+- [x] Documented bucket creation, permissions, and structure
+- [x] Added troubleshooting and security best practices
+- [x] Documented prompt file format and initialization
+- [x] Added cost optimization and monitoring tips
+- [x] Show current bucket in UI (read from env var)
+
+### Testing
+- [ ] Test prompt listing and selection in UI
+- [ ] Test prompt editing and saving to GCS
+- [ ] Test Initialize Defaults functionality
+- [ ] Test permission checks for default prompts
+- [ ] Verify analysis pipeline uses prompts from GCS

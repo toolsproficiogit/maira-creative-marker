@@ -6,78 +6,91 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, RefreshCw, Save, RotateCcw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Save, RotateCcw, FileText, Database, AlertCircle, CheckCircle2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import type { PromptConfig } from "../../../shared/promptTypes";
 
 export default function ConfigurationSection() {
-  const { data: config, isLoading, refetch } = trpc.analysis.getConfig.useQuery();
-  const { data: defaultConfig } = trpc.analysis.getDefaultConfig.useQuery();
-  const refreshConfigMutation = trpc.analysis.refreshConfig.useMutation();
-  const updateConfigMutation = trpc.analysis.updateConfig.useMutation();
+  const { data: promptsData, isLoading, refetch } = trpc.prompts.list.useQuery();
+  const initializeDefaultsMutation = trpc.prompts.initializeDefaults.useMutation();
+  const updatePromptMutation = trpc.prompts.update.useMutation();
 
-  const [editedConfig, setEditedConfig] = useState<any>(null);
+  const [selectedPromptId, setSelectedPromptId] = useState<string | null>(null);
+  const [editedPrompt, setEditedPrompt] = useState<PromptConfig | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const currentConfig = editedConfig || config;
+  const { data: selectedPromptData } = trpc.prompts.get.useQuery(
+    { promptId: selectedPromptId! },
+    { enabled: !!selectedPromptId }
+  );
 
-  const handleRefresh = async () => {
+  const currentPrompt = editedPrompt || selectedPromptData?.prompt;
+
+  const handleInitializeDefaults = async () => {
     try {
-      await refreshConfigMutation.mutateAsync();
+      const result = await initializeDefaultsMutation.mutateAsync();
+      toast.success(`Initialized ${result.initialized} default prompts to GCS`);
       await refetch();
-      setEditedConfig(null);
-      toast.success("Configuration refreshed from GCS");
     } catch (error: any) {
-      toast.error(`Failed to refresh: ${error.message}`);
+      toast.error(`Failed to initialize: ${error.message}`);
     }
   };
 
+  const handleSelectPrompt = (promptId: string) => {
+    setSelectedPromptId(promptId);
+    setEditedPrompt(null);
+  };
+
   const handleSave = async () => {
-    if (!editedConfig) {
+    if (!editedPrompt) {
       toast.error("No changes to save");
       return;
     }
 
     setIsSaving(true);
     try {
-      await updateConfigMutation.mutateAsync({ config: editedConfig });
+      await updatePromptMutation.mutateAsync({
+        id: editedPrompt.id,
+        name: editedPrompt.name,
+        description: editedPrompt.description,
+        systemPrompt: editedPrompt.systemPrompt,
+        outputSchema: editedPrompt.outputSchema,
+        bigqueryTable: editedPrompt.bigqueryTable,
+        version: editedPrompt.version,
+      });
+      toast.success("Prompt saved to GCS");
       await refetch();
-      setEditedConfig(null);
-      toast.success("Configuration saved to GCS");
+      setEditedPrompt(null);
+      // Refresh the selected prompt
+      if (selectedPromptId) {
+        setSelectedPromptId(null);
+        setTimeout(() => setSelectedPromptId(editedPrompt.id), 100);
+      }
     } catch (error: any) {
-      toast.error(`Failed to save: ${error.message}`);
+      if (error.message.includes("CONFLICT")) {
+        toast.error("Prompt was modified by another user. Please refresh and try again.");
+      } else if (error.message.includes("FORBIDDEN")) {
+        toast.error("You don't have permission to modify this prompt");
+      } else {
+        toast.error(`Failed to save: ${error.message}`);
+      }
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleResetToDefault = () => {
-    if (defaultConfig) {
-      setEditedConfig(defaultConfig);
-      toast.info("Reset to default configuration");
-    }
+  const handleReset = () => {
+    setEditedPrompt(null);
+    toast.info("Changes discarded");
   };
 
-  const updateSystemPrompt = (key: string, value: string) => {
-    setEditedConfig({
-      ...currentConfig,
-      systemPrompts: {
-        ...currentConfig.systemPrompts,
-        [key]: value,
-      },
-    });
-  };
-
-  const updateOutputSchema = (key: string, field: "tableName" | "schema", value: any) => {
-    setEditedConfig({
-      ...currentConfig,
-      outputSchemas: {
-        ...currentConfig.outputSchemas,
-        [key]: {
-          ...currentConfig.outputSchemas[key],
-          [field]: value,
-        },
-      },
+  const updateField = (field: keyof PromptConfig, value: any) => {
+    if (!currentPrompt) return;
+    setEditedPrompt({
+      ...currentPrompt,
+      [field]: value,
     });
   };
 
@@ -89,162 +102,279 @@ export default function ConfigurationSection() {
     );
   }
 
-  if (!currentConfig) {
+  if (!promptsData) {
     return (
       <Alert>
-        <AlertDescription>Failed to load configuration</AlertDescription>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>Failed to load prompts</AlertDescription>
       </Alert>
     );
   }
 
+  const { prompts, source } = promptsData;
+
   return (
     <div className="space-y-6">
-      {/* Actions */}
+      {/* Status & Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Configuration Management</CardTitle>
+          <CardTitle>Prompt Management</CardTitle>
           <CardDescription>
-            Manage system prompts, output schemas, and BigQuery tables
+            Manage AI prompts and output schemas stored in Google Cloud Storage
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex gap-3">
-          <Button onClick={handleRefresh} variant="outline">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh from GCS
-          </Button>
-          <Button onClick={handleSave} disabled={!editedConfig || isSaving}>
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Save to GCS
-              </>
-            )}
-          </Button>
-          <Button onClick={handleResetToDefault} variant="outline">
-            <RotateCcw className="mr-2 h-4 w-4" />
-            Reset to Default
-          </Button>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Badge variant={source === "gcs" ? "default" : "secondary"}>
+              {source === "gcs" ? (
+                <>
+                  <CheckCircle2 className="mr-1 h-3 w-3" />
+                  Connected to GCS
+                </>
+              ) : (
+                <>
+                  <AlertCircle className="mr-1 h-3 w-3" />
+                  Using fallback defaults
+                </>
+              )}
+            </Badge>
+            <span className="text-sm text-muted-foreground">
+              {prompts.length} prompts available
+            </span>
+          </div>
+
+          {source === "fallback" && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                GCS connection failed. Using hardcoded defaults. Click "Initialize Defaults" to copy them to GCS.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="flex gap-3">
+            <Button onClick={handleInitializeDefaults} variant="outline" disabled={initializeDefaultsMutation.isPending}>
+              {initializeDefaultsMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Initializing...
+                </>
+              ) : (
+                <>
+                  <Database className="mr-2 h-4 w-4" />
+                  Initialize Defaults
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      {/* System Prompts */}
-      <Card>
-        <CardHeader>
-          <CardTitle>System Prompts</CardTitle>
-          <CardDescription>
-            Configure prompts for each filetype and focus combination
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="image-branding" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="image-branding">Image-Branding</TabsTrigger>
-              <TabsTrigger value="image-performance">Image-Performance</TabsTrigger>
-              <TabsTrigger value="video-branding">Video-Branding</TabsTrigger>
-              <TabsTrigger value="video-performance">Video-Performance</TabsTrigger>
-            </TabsList>
-
-            {Object.entries(currentConfig.systemPrompts).map(([key, value]) => (
-              <TabsContent key={key} value={key} className="space-y-4">
-                <div>
-                  <Label htmlFor={`prompt-${key}`}>System Prompt</Label>
-                  <Textarea
-                    id={`prompt-${key}`}
-                    value={value as string}
-                    onChange={(e) => updateSystemPrompt(key, e.target.value)}
-                    rows={15}
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Use template variables: {"{brand}"}, {"{targetAudience}"}, {"{category}"},{" "}
-                    {"{primaryMessage}"}, {"{secondaryMessage1}"}, {"{secondaryMessage2}"}
-                  </p>
+      {/* Prompt List & Editor */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Prompt List */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Available Prompts</CardTitle>
+            <CardDescription>Select a prompt to edit</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {prompts.map((prompt) => (
+              <button
+                key={prompt.id}
+                onClick={() => handleSelectPrompt(prompt.id)}
+                className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                  selectedPromptId === prompt.id
+                    ? "bg-primary/10 border-primary"
+                    : "hover:bg-accent border-border"
+                }`}
+              >
+                <div className="font-medium text-sm">{prompt.name}</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {prompt.filetype} • {prompt.focus}
+                  {prompt.isDefault && (
+                    <Badge variant="secondary" className="ml-2 text-xs">
+                      Default
+                    </Badge>
+                  )}
                 </div>
-              </TabsContent>
+              </button>
             ))}
-          </Tabs>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Output Schemas */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Output Schemas & BigQuery Tables</CardTitle>
-          <CardDescription>
-            Configure JSON schemas and BigQuery table names
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="image-branding" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="image-branding">Image-Branding</TabsTrigger>
-              <TabsTrigger value="image-performance">Image-Performance</TabsTrigger>
-              <TabsTrigger value="video-branding">Video-Branding</TabsTrigger>
-              <TabsTrigger value="video-performance">Video-Performance</TabsTrigger>
-            </TabsList>
-
-            {Object.entries(currentConfig.outputSchemas).map(([key, value]: [string, any]) => (
-              <TabsContent key={key} value={key} className="space-y-4">
-                <div>
-                  <Label htmlFor={`table-${key}`}>BigQuery Table Name</Label>
-                  <Input
-                    id={`table-${key}`}
-                    value={value.tableName}
-                    onChange={(e) => updateOutputSchema(key, "tableName", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor={`schema-${key}`}>JSON Schema</Label>
-                  <Textarea
-                    id={`schema-${key}`}
-                    value={JSON.stringify(value.schema, null, 2)}
-                    onChange={(e) => {
-                      try {
-                        const parsed = JSON.parse(e.target.value);
-                        updateOutputSchema(key, "schema", parsed);
-                      } catch (error) {
-                        // Invalid JSON, don't update
-                      }
-                    }}
-                    rows={12}
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Define expected fields and types (string, integer, array, object)
-                  </p>
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      {/* Context Fields */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Context Fields</CardTitle>
-          <CardDescription>
-            Default context fields for file uploads (read-only in this version)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {currentConfig.contextFields.map((field: any) => (
-              <div key={field.name} className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <div className="font-medium">{field.label}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {field.name} • {field.type} • {field.required ? "Required" : "Optional"}
+        {/* Prompt Editor */}
+        <div className="lg:col-span-2">
+          {!currentPrompt ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>Select a prompt to view and edit</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle>{currentPrompt.name}</CardTitle>
+                    <CardDescription>{currentPrompt.description}</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleSave} disabled={!editedPrompt || isSaving} size="sm">
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          Save
+                        </>
+                      )}
+                    </Button>
+                    <Button onClick={handleReset} variant="outline" disabled={!editedPrompt} size="sm">
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      Reset
+                    </Button>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="prompt" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="prompt">System Prompt</TabsTrigger>
+                    <TabsTrigger value="schema">Output Schema</TabsTrigger>
+                    <TabsTrigger value="metadata">Metadata</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="prompt" className="space-y-4 mt-4">
+                    <div>
+                      <Label htmlFor="systemPrompt">System Prompt</Label>
+                      <Textarea
+                        id="systemPrompt"
+                        value={currentPrompt.systemPrompt}
+                        onChange={(e) => updateField("systemPrompt", e.target.value)}
+                        rows={20}
+                        className="font-mono text-sm mt-2"
+                      />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Use template variables: {"{brand}"}, {"{targetAudience}"}, {"{category}"},{" "}
+                        {"{primaryMessage}"}, {"{secondaryMessage1}"}, {"{secondaryMessage2}"}
+                      </p>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="schema" className="space-y-4 mt-4">
+                    <div>
+                      <Label htmlFor="bigqueryTable">BigQuery Table Name</Label>
+                      <Input
+                        id="bigqueryTable"
+                        value={currentPrompt.bigqueryTable}
+                        onChange={(e) => updateField("bigqueryTable", e.target.value)}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="outputSchema">JSON Schema</Label>
+                      <Textarea
+                        id="outputSchema"
+                        value={JSON.stringify(currentPrompt.outputSchema, null, 2)}
+                        onChange={(e) => {
+                          try {
+                            const parsed = JSON.parse(e.target.value);
+                            updateField("outputSchema", parsed);
+                          } catch (error) {
+                            // Invalid JSON, don't update
+                          }
+                        }}
+                        rows={16}
+                        className="font-mono text-sm mt-2"
+                      />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Define expected output structure with types (string, integer, array, object)
+                      </p>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="metadata" className="space-y-4 mt-4">
+                    <div>
+                      <Label htmlFor="name">Prompt Name</Label>
+                      <Input
+                        id="name"
+                        value={currentPrompt.name}
+                        onChange={(e) => updateField("name", e.target.value)}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea
+                        id="description"
+                        value={currentPrompt.description}
+                        onChange={(e) => updateField("description", e.target.value)}
+                        rows={3}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>File Type</Label>
+                        <div className="mt-2 p-3 bg-muted rounded-md text-sm">{currentPrompt.filetype}</div>
+                      </div>
+                      <div>
+                        <Label>Focus</Label>
+                        <div className="mt-2 p-3 bg-muted rounded-md text-sm">{currentPrompt.focus}</div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Version</Label>
+                        <div className="mt-2 p-3 bg-muted rounded-md text-sm">v{currentPrompt.version}</div>
+                      </div>
+                      <div>
+                        <Label>Created By</Label>
+                        <div className="mt-2 p-3 bg-muted rounded-md text-sm truncate">
+                          {currentPrompt.createdBy}
+                        </div>
+                      </div>
+                    </div>
+                    {currentPrompt.isDefault && (
+                      <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          This is a default prompt. Only admins can modify it.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+
+      {/* GCS Bucket Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle>GCS Bucket Configuration</CardTitle>
+          <CardDescription>
+            Configure Google Cloud Storage bucket for prompt storage
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              GCS bucket is configured via environment variables. See{" "}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">GCS_BUCKET_SETUP.md</code> for setup instructions.
+              <br />
+              <br />
+              Current bucket: <code className="text-xs bg-muted px-1 py-0.5 rounded">maira-creative-marker</code>
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     </div>
