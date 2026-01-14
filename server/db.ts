@@ -18,15 +18,28 @@ export async function getDb() {
       
       if (sslParam) {
         // Parse SSL configuration from query parameter
-        let sslConfig: any = true;
+        // mysql2 requires SSL to be an object, not a boolean
+        let sslConfig: any = { rejectUnauthorized: true }; // Default SSL config
         try {
           // Try to parse as JSON
-          sslConfig = JSON.parse(sslParam);
+          const parsed = JSON.parse(sslParam);
+          if (typeof parsed === 'object' && parsed !== null) {
+            sslConfig = parsed;
+          } else if (parsed === true) {
+            sslConfig = { rejectUnauthorized: true };
+          } else if (parsed === false) {
+            sslConfig = false; // Explicitly disable SSL
+          }
         } catch {
-          // If not JSON, treat as boolean
-          if (sslParam === 'true') sslConfig = true;
-          else if (sslParam === 'false') sslConfig = false;
-          else sslConfig = true; // Default to true for any other value
+          // If not valid JSON, treat as boolean string
+          if (sslParam === 'true') {
+            sslConfig = { rejectUnauthorized: true };
+          } else if (sslParam === 'false') {
+            sslConfig = false;
+          } else {
+            // Default to secure SSL for any other value
+            sslConfig = { rejectUnauthorized: true };
+          }
         }
         
         // Manually construct connection config

@@ -165,3 +165,7 @@
 - [x] Rewrite database connection to manually parse DATABASE_URL
 - [x] Construct mysql2 config object with host, port, user, password, database, ssl
 - [x] Test SSL configuration in production build - builds successfully
+- [x] Fix SSL configuration to always use object format (not boolean)
+- [x] Convert boolean SSL values to { rejectUnauthorized: true }
+- [x] Enable Express trust proxy for Cloud Run
+- [x] Test both fixes - database connects successfully
