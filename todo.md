@@ -186,3 +186,6 @@
 - [x] Switch to Gemini 2.0 Flash model (gemini-2.0-flash-001)
 - [x] Server compiles and runs successfully with new SDK
 - [ ] Test complete analysis pipeline in production
+- [x] Update to Gemini 3 Flash model (gemini-3-flash-preview-001)
+- [x] Server compiles and runs successfully with Gemini 3 Flash
+- [ ] Test analysis with Gemini 3 Flash in production
