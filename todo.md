@@ -217,3 +217,11 @@
 - [x] Added Select All / Deselect All buttons
 - [x] Updated runAnalysis endpoint to accept optional fileIds parameter
 - [x] Button shows count of selected files
+
+## Bug Fix - Schema Validation Error
+
+- [x] Fix "Missing required fields: type, properties, required, additionalProperties" error
+- [x] Investigate schema structure being passed to analyzeWithRetry
+- [x] Ensure schema validation logic handles schema correctly
+- [x] Updated validation to check expectedSchema.properties keys instead of top-level schema keys
+- [x] Added fallback for non-standard schema formats

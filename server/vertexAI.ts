@@ -152,7 +152,17 @@ export async function analyzeWithRetry(params: {
       }
 
       // Validate against expected schema (basic validation)
-      const schemaKeys = Object.keys(expectedSchema);
+      // The schema is a JSON Schema object with properties, so check against properties keys
+      let schemaKeys: string[] = [];
+      
+      if (expectedSchema.properties) {
+        // Standard JSON Schema format
+        schemaKeys = Object.keys(expectedSchema.properties);
+      } else {
+        // Fallback: treat expectedSchema as a simple key-value map
+        schemaKeys = Object.keys(expectedSchema);
+      }
+      
       const missingKeys = schemaKeys.filter(key => !(key in parsed));
       
       if (missingKeys.length > 0) {
