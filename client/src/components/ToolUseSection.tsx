@@ -268,11 +268,29 @@ export default function ToolUseSection() {
         return (
           <div key={key} className="mb-3">
             <div className="font-semibold text-sm mb-1">{formattedKey}:</div>
-            <ul className="list-disc list-inside space-y-1 text-sm">
-              {value.map((item, idx) => (
-                <li key={idx}>{String(item)}</li>
-              ))}
-            </ul>
+            {value.length > 0 && typeof value[0] === "object" && value[0] !== null ? (
+              // Array of objects - display as structured list
+              <div className="space-y-2 pl-4">
+                {value.map((item, idx) => (
+                  <div key={idx} className="border-l-2 border-gray-300 pl-3 py-1">
+                    <div className="font-medium text-xs text-muted-foreground mb-1">Item {idx + 1}</div>
+                    {Object.entries(item).map(([subKey, subValue]) => (
+                      <div key={subKey} className="text-sm">
+                        <span className="font-medium">{subKey.replace(/_/g, " ")}:</span>{" "}
+                        {String(subValue)}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // Array of primitives - display as list
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                {value.map((item, idx) => (
+                  <li key={idx}>{String(item)}</li>
+                ))}
+              </ul>
+            )}
           </div>
         );
       } else if (typeof value === "object" && value !== null) {

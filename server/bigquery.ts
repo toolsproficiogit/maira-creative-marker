@@ -40,17 +40,20 @@ export async function ensureTableExists(
   
   if (!exists) {
     // Convert JSON schema to BigQuery schema
-    const fields = Object.entries(schema).map(([name, type]) => {
+    // Handle both standard JSON Schema format (with properties) and simple key-value format
+    const schemaProperties = schema.properties || schema;
+    const fields = Object.entries(schemaProperties).map(([name, type]) => {
       let bqType = "STRING";
       
-      if (typeof type === "object" && type.type) {
-        switch (type.type) {
+      if (typeof type === "object" && type !== null && "type" in type) {
+        const typeObj = type as { type: string };
+        switch (typeObj.type) {
           case "string":
             bqType = "STRING";
             break;
           case "number":
           case "integer":
-            bqType = type.type === "integer" ? "INTEGER" : "FLOAT";
+            bqType = typeObj.type === "integer" ? "INTEGER" : "FLOAT";
             break;
           case "boolean":
             bqType = "BOOLEAN";

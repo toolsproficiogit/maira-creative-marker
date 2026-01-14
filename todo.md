@@ -225,3 +225,14 @@
 - [x] Ensure schema validation logic handles schema correctly
 - [x] Updated validation to check expectedSchema.properties keys instead of top-level schema keys
 - [x] Added fallback for non-standard schema formats
+
+## Bug Fix - Action Plan Parsing Issue
+
+- [x] Fix Action Plan showing as "[object Object]" in UI
+- [x] Updated formatResultData to properly display arrays of objects
+- [x] Arrays of objects now show structured list with labeled items
+- [x] Investigate why Action Plan array is not being properly parsed/displayed
+- [x] Fix BigQuery insertion error related to Action Plan structure
+- [x] Updated ensureTableExists to use schema.properties instead of top-level schema keys
+- [x] Fixed TypeScript errors in schema processing
+- [x] Ensure Action Plan is properly formatted for both UI display and BigQuery storage
