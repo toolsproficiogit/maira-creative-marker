@@ -190,3 +190,6 @@
 - [x] Server compiles and runs successfully with Gemini 3 Flash
 - [ ] Test analysis with Gemini 3 Flash in production
 - [x] Fix model name to gemini-3-flash-preview (remove -001 suffix)
+- [x] Switch to Gemini 2.5 Flash stable model (gemini-2.5-flash-002)
+- [x] Server compiles and runs successfully with Gemini 2.5 Flash
+- [ ] Test analysis with stable Gemini 2.5 Flash in production
