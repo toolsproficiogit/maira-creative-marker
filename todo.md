@@ -417,3 +417,11 @@
 - [x] Fix BigQuery insertion to use correct field names
 - [x] Updated defaultPrompts.ts to extract only schema part from JSON files
 - [x] Now outputSchema contains only the JSON Schema, not the wrapper object
+
+## Bug Fix - Schema Error Still Persists
+
+- [ ] Same "Missing required fields: tableName, schema" error still occurs
+- [ ] Check if GCS prompts also have the wrapper structure issue
+- [ ] Verify schema is correctly extracted in all code paths
+- [ ] Add logging to trace schema structure through pipeline
+- [ ] Test with actual file upload and analysis

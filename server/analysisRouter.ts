@@ -278,6 +278,8 @@ export const analysisRouter = router({
         };
 
         // Analyze with Vertex AI using prompt data
+        console.log('[Analysis] Prompt outputSchema keys:', Object.keys(prompt.outputSchema));
+        console.log('[Analysis] Prompt outputSchema sample:', JSON.stringify(prompt.outputSchema).substring(0, 200));
         const analysisResult = await analyzeWithRetry({
           fileUrl: file.fileUrl,
           mimeType: file.mimeType || "application/octet-stream",
