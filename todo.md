@@ -346,3 +346,10 @@
 - [x] Configuration tab accessible with Create New Prompt button
 - [x] Name field editable in Metadata tab
 - [x] Ready for user testing with GCS bucket
+
+## Remove Admin Check for Testing
+
+- [x] Remove admin check from initializeDefaults endpoint
+- [x] Commented out canManageDefaults check
+- [x] Allow anyone to initialize defaults during testing phase
+- [x] Add TODO comment to restore admin check in Phase 2
