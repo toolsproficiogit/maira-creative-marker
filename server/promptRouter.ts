@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import { protectedProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import {
   listPromptsFromGCS,
@@ -26,8 +26,9 @@ function canManageDefaults(userEmail: string, userRole: string): boolean {
 export const promptRouter = router({
   /**
    * List all available prompts (GCS + defaults, with fallback)
+   * TODO: Re-enable auth in Phase 2 (change to protectedProcedure)
    */
-  list: protectedProcedure.query(async ({ ctx }) => {
+  list: publicProcedure.query(async ({ ctx }) => {
     try {
       // Try to get prompts from GCS
       const gcsPrompts = await listPromptsFromGCS();
@@ -62,8 +63,9 @@ export const promptRouter = router({
 
   /**
    * Get a specific prompt by ID
+   * TODO: Re-enable auth in Phase 2 (change to protectedProcedure)
    */
-  get: protectedProcedure
+  get: publicProcedure
     .input(z.object({ promptId: z.string() }))
     .query(async ({ input }) => {
       const { promptId } = input;
@@ -103,8 +105,9 @@ export const promptRouter = router({
 
   /**
    * Create a new prompt
+   * TODO: Re-enable auth in Phase 2 (change to protectedProcedure)
    */
-  create: protectedProcedure
+  create: publicProcedure
     .input(
       z.object({
         id: z.string().regex(/^[a-z0-9_]+$/, "ID must be lowercase alphanumeric with underscores"),
@@ -141,7 +144,7 @@ export const promptRouter = router({
         ...input,
         isDefault: false,
         createdAt: new Date().toISOString(),
-        createdBy: ctx.user.email || ctx.user.name || "unknown",
+        createdBy: ctx.user?.email || ctx.user?.name || "anonymous",
         version: 1,
       };
       
@@ -152,8 +155,9 @@ export const promptRouter = router({
 
   /**
    * Update an existing prompt
+   * TODO: Re-enable auth in Phase 2 (change to protectedProcedure)
    */
-  update: protectedProcedure
+  update: publicProcedure
     .input(
       z.object({
         id: z.string(),
@@ -178,7 +182,7 @@ export const promptRouter = router({
       }
       
       // Check if it's a default and user has permission
-      if (existing.isDefault && !canManageDefaults(ctx.user.email || "", ctx.user.role || "user")) {
+      if (existing.isDefault && !canManageDefaults(ctx.user?.email || "", ctx.user?.role || "user")) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "Only admins can update default prompts",
@@ -207,8 +211,9 @@ export const promptRouter = router({
 
   /**
    * Delete a prompt
+   * TODO: Re-enable auth in Phase 2 (change to protectedProcedure)
    */
-  delete: protectedProcedure
+  delete: publicProcedure
     .input(z.object({ promptId: z.string() }))
     .mutation(async ({ input, ctx }) => {
       const { promptId } = input;
@@ -237,9 +242,10 @@ export const promptRouter = router({
 
   /**
    * Initialize GCS with default prompts (admin only)
+   * TODO: Re-enable auth in Phase 2 (change to protectedProcedure)
    */
-  initializeDefaults: protectedProcedure.mutation(async ({ ctx }) => {
-    if (!canManageDefaults(ctx.user.email || "", ctx.user.role || "user")) {
+  initializeDefaults: publicProcedure.mutation(async ({ ctx }) => {
+    if (!canManageDefaults(ctx.user?.email || "", ctx.user?.role || "user")) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: "Only admins can initialize defaults",

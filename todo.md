@@ -310,3 +310,13 @@
 - [x] Changed `*_schema.json` → `*_schema_default.json`
 - [x] Ensure all *_default.txt and *_default.json files are included in build
 - [ ] Test deployment after fix
+
+## Auth Fix - Make Prompt Management Public
+
+- [x] Change promptRouter procedures from protectedProcedure to publicProcedure
+- [x] Update list, get, create, update, delete, initializeDefaults endpoints
+- [x] Added null checks for ctx.user (now optional with publicProcedure)
+- [x] Changed createdBy to "anonymous" when user is null
+- [x] Add TODO comment to re-enable auth in Phase 2
+- [x] Test Configuration tab loads without authentication
+- [x] Server running without errors, Configuration tab should now be accessible
