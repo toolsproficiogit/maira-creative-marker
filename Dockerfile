@@ -39,8 +39,8 @@ RUN pnpm install --frozen-lockfile --prod
 COPY --from=builder /app/dist ./dist
 
 # Copy prompt and schema files (needed by defaultPrompts.ts)
-COPY --from=builder /app/*_prompt_cs.txt ./
-COPY --from=builder /app/*_schema.json ./
+COPY --from=builder /app/*_prompt_cs_default.txt ./
+COPY --from=builder /app/*_schema_default.json ./
 
 # Expose port (Cloud Run will set PORT env var)
 EXPOSE 8080

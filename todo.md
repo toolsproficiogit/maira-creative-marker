@@ -300,3 +300,13 @@
 - [x] Test Configuration page loads correctly with and without GCS
 - [x] Verified page loads and shows Tool Use tab (Configuration tab accessible)
 - [x] Server running without errors after all fixes
+
+## Deployment Error - Missing Prompt Files
+
+- [x] Fix ENOENT error: renamed prompt files not copied to /app/ in deployment
+- [x] Check Dockerfile or build config for file copying
+- [x] Updated Dockerfile COPY commands to use new filenames with _default suffix
+- [x] Changed `*_prompt_cs.txt` → `*_prompt_cs_default.txt`
+- [x] Changed `*_schema.json` → `*_schema_default.json`
+- [x] Ensure all *_default.txt and *_default.json files are included in build
+- [ ] Test deployment after fix
