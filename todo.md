@@ -430,3 +430,15 @@
 - [x] Extracts schema.schema → outputSchema
 - [x] Extracts schema.tableName → bigqueryTable
 - [ ] Test with actual file upload and analysis in Cloud Run
+
+## Language Enforcement Issue
+
+- [x] video_performance prompt returns results in English instead of Czech
+- [x] ROOT CAUSE: No explicit language instruction in prompts
+- [x] Compare video_performance vs video_branding prompts for language differences
+- [x] Neither prompt had explicit language specification
+- [x] Add explicit language instruction to all prompts
+- [x] Added "**JAZYK:** Všechny textové odpovědi MUSÍ být v češtině" to all 4 default prompts
+- [x] Updated video_branding, video_performance, image_branding, image_performance
+- [ ] Test language enforcement with both prompt types
+- [ ] Consider adding language parameter to context fields (future enhancement)
