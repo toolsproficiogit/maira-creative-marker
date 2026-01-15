@@ -34,22 +34,26 @@ const IMAGE_BRANDING_PROMPT = fs.readFileSync(
   "utf8"
 );
 
-// Read schema files
-const VIDEO_PERFORMANCE_SCHEMA = JSON.parse(
+// Read schema files and extract the schema part (not tableName)
+const VIDEO_PERFORMANCE_SCHEMA_FILE = JSON.parse(
   fs.readFileSync(path.join(__dirname, "../video_performance_schema_default.json"), "utf8")
 );
+const VIDEO_PERFORMANCE_SCHEMA = VIDEO_PERFORMANCE_SCHEMA_FILE.schema;
 
-const VIDEO_BRANDING_SCHEMA = JSON.parse(
+const VIDEO_BRANDING_SCHEMA_FILE = JSON.parse(
   fs.readFileSync(path.join(__dirname, "../video_branding_schema_default.json"), "utf8")
 );
+const VIDEO_BRANDING_SCHEMA = VIDEO_BRANDING_SCHEMA_FILE.schema;
 
-const IMAGE_PERFORMANCE_SCHEMA = JSON.parse(
+const IMAGE_PERFORMANCE_SCHEMA_FILE = JSON.parse(
   fs.readFileSync(path.join(__dirname, "../image_performance_schema_default.json"), "utf8")
 );
+const IMAGE_PERFORMANCE_SCHEMA = IMAGE_PERFORMANCE_SCHEMA_FILE.schema;
 
-const IMAGE_BRANDING_SCHEMA = JSON.parse(
+const IMAGE_BRANDING_SCHEMA_FILE = JSON.parse(
   fs.readFileSync(path.join(__dirname, "../image_branding_schema_default.json"), "utf8")
 );
+const IMAGE_BRANDING_SCHEMA = IMAGE_BRANDING_SCHEMA_FILE.schema;
 
 export const DEFAULT_PROMPTS: Record<string, PromptConfig> = {
   video_performance_default: {

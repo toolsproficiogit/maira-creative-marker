@@ -406,3 +406,14 @@
 - [x] Use prompt.bigqueryTable for table name
 - [x] Handle mixed prompt types in single analysis run
 - [x] Validate file type matches prompt type before analysis
+
+## Bug Fix - BigQuery Schema/TableName Not Passed
+
+- [x] Error: "Missing required fields: tableName, schema" during analysis
+- [x] Root cause: Schema JSON files have wrapper {tableName, schema} structure
+- [x] Investigate ensureTableExists call in analysisRouter
+- [x] Check if prompt.bigqueryTable and prompt.outputSchema are correctly passed
+- [x] Verify prompt object structure from GCS/defaults
+- [x] Fix BigQuery insertion to use correct field names
+- [x] Updated defaultPrompts.ts to extract only schema part from JSON files
+- [x] Now outputSchema contains only the JSON Schema, not the wrapper object
