@@ -15,40 +15,40 @@ const __dirname = path.dirname(__filename);
 
 // Read prompt files from project directory
 const VIDEO_PERFORMANCE_PROMPT = fs.readFileSync(
-  path.join(__dirname, "../video_performance_prompt_cs.txt"),
+  path.join(__dirname, "../video_performance_prompt_cs_default.txt"),
   "utf8"
 );
 
 const VIDEO_BRANDING_PROMPT = fs.readFileSync(
-  path.join(__dirname, "../video_branding_prompt_cs.txt"),
+  path.join(__dirname, "../video_branding_prompt_cs_default.txt"),
   "utf8"
 );
 
 const IMAGE_PERFORMANCE_PROMPT = fs.readFileSync(
-  path.join(__dirname, "../image_performance_prompt_cs.txt"),
+  path.join(__dirname, "../image_performance_prompt_cs_default.txt"),
   "utf8"
 );
 
 const IMAGE_BRANDING_PROMPT = fs.readFileSync(
-  path.join(__dirname, "../image_branding_prompt_cs.txt"),
+  path.join(__dirname, "../image_branding_prompt_cs_default.txt"),
   "utf8"
 );
 
 // Read schema files
 const VIDEO_PERFORMANCE_SCHEMA = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "../video_performance_schema.json"), "utf8")
+  fs.readFileSync(path.join(__dirname, "../video_performance_schema_default.json"), "utf8")
 );
 
 const VIDEO_BRANDING_SCHEMA = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "../video_branding_schema.json"), "utf8")
+  fs.readFileSync(path.join(__dirname, "../video_branding_schema_default.json"), "utf8")
 );
 
 const IMAGE_PERFORMANCE_SCHEMA = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "../image_performance_schema.json"), "utf8")
+  fs.readFileSync(path.join(__dirname, "../image_performance_schema_default.json"), "utf8")
 );
 
 const IMAGE_BRANDING_SCHEMA = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "../image_branding_schema.json"), "utf8")
+  fs.readFileSync(path.join(__dirname, "../image_branding_schema_default.json"), "utf8")
 );
 
 export const DEFAULT_PROMPTS: Record<string, PromptConfig> = {

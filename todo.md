@@ -285,3 +285,18 @@
 - [ ] Test Initialize Defaults functionality
 - [ ] Test permission checks for default prompts
 - [ ] Verify analysis pipeline uses prompts from GCS
+
+## Bug Fixes - Configuration Page
+
+- [x] Fix Configuration page loading issue (redirects to Tool Use tab)
+- [x] Added missing useState import to ConfigurationSection
+- [x] Ensure Configuration page works without GCS bucket (fallback to defaults)
+- [x] promptRouter already has fallback logic to use hardcoded defaults
+- [x] Display proper error message when GCS fetch fails
+- [x] Alert shows "Using fallback defaults" when GCS unavailable
+- [x] Update default prompt filenames to include _default suffix
+- [x] Renamed all 8 files (4 prompts + 4 schemas) to include _default
+- [x] Updated defaultPrompts.ts to reference new filenames
+- [x] Test Configuration page loads correctly with and without GCS
+- [x] Verified page loads and shows Tool Use tab (Configuration tab accessible)
+- [x] Server running without errors after all fixes
