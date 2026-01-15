@@ -36,6 +36,7 @@ export default function ToolUseSection() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [pendingFiles, setPendingFiles] = useState<UploadedFile[]>([]); // Files selected but not yet uploaded
   const [selectedFileIds, setSelectedFileIds] = useState<Set<number>>(new Set()); // Files selected for analysis
+  const [filePromptSelections, setFilePromptSelections] = useState<Map<number, string>>(new Map()); // fileId -> promptId
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number; fileName: string } | null>(null);
   const [focus, setFocus] = useState<"branding" | "performance">("branding");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -55,6 +56,7 @@ export default function ToolUseSection() {
     { sessionId: sessionId! },
     { enabled: !!sessionId }
   );
+  const { data: availablePrompts } = trpc.prompts.list.useQuery();
 
   useEffect(() => {
     // Create session only if we don't have one
@@ -210,6 +212,35 @@ export default function ToolUseSection() {
     setExpandedPendingFiles(new Set());
   };
 
+  const setFilePrompt = (fileId: number, promptId: string) => {
+    setFilePromptSelections(new Map(filePromptSelections.set(fileId, promptId)));
+  };
+
+  const getDefaultPromptForFile = (file: UploadedFile) => {
+    if (!availablePrompts) return null;
+    // Find default prompt matching file type and branding focus
+    const defaultPrompt = availablePrompts.prompts.find(
+      (p: any) => p.filetype === file.filetype && p.focus === 'branding' && p.isDefault
+    );
+    return defaultPrompt?.id || null;
+  };
+
+  // Auto-select default prompts when files are loaded
+  useEffect(() => {
+    if (uploadedFiles.length > 0 && availablePrompts) {
+      const newSelections = new Map(filePromptSelections);
+      uploadedFiles.forEach(file => {
+        if (file.fileId && !newSelections.has(file.fileId)) {
+          const defaultPrompt = getDefaultPromptForFile(file);
+          if (defaultPrompt) {
+            newSelections.set(file.fileId, defaultPrompt);
+          }
+        }
+      });
+      setFilePromptSelections(newSelections);
+    }
+  }, [uploadedFiles, availablePrompts]);
+
   const updateContextField = (index: number, field: string, value: string) => {
     const updated = [...pendingFiles];
     updated[index].contextFields = {
@@ -327,12 +358,25 @@ export default function ToolUseSection() {
       return;
     }
 
+    // Validate that all selected files have prompts assigned
+    const selectedFilesArray = Array.from(selectedFileIds);
+    const filesWithoutPrompts = selectedFilesArray.filter(fileId => !filePromptSelections.get(fileId));
+    if (filesWithoutPrompts.length > 0) {
+      toast.error(`Please select prompts for all files (${filesWithoutPrompts.length} missing)`);
+      return;
+    }
+
+    // Build file-prompt pairs
+    const filePromptPairs = selectedFilesArray.map(fileId => ({
+      fileId,
+      promptId: filePromptSelections.get(fileId)!,
+    }));
+
     setIsAnalyzing(true);
     try {
       const result = await runAnalysisMutation.mutateAsync({
         sessionId,
-        focus,
-        fileIds: Array.from(selectedFileIds),
+        filePromptPairs,
       });
 
       setResults(result.results);
@@ -611,8 +655,60 @@ export default function ToolUseSection() {
           {/* File selection */}
           {uploadedFiles.length > 0 && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>Select Files to Analyze</Label>
+              <Label>Select Files and Prompts</Label>
+              
+              <div className="space-y-3 max-h-96 overflow-y-auto border rounded-md p-3">
+                {uploadedFiles.map((uploadedFile) => {
+                  const fileId = uploadedFile.fileId!;
+                  const isSelected = selectedFileIds.has(fileId);
+                  const selectedPromptId = filePromptSelections.get(fileId);
+                  // Filter prompts by file type
+                  const compatiblePrompts = availablePrompts?.prompts.filter(
+                    (p: any) => p.filetype === uploadedFile.filetype
+                  ) || [];
+                  
+                  return (
+                    <div key={fileId} className="flex items-start gap-3 p-3 rounded border bg-card">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleFileSelection(fileId)}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div>
+                          <div className="font-medium text-sm">File #{fileId}</div>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {uploadedFile.contextFields.brand} • {uploadedFile.contextFields.category} • {uploadedFile.filetype}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">Prompt:</span>
+                          <Select
+                            value={selectedPromptId || ''}
+                            onValueChange={(promptId) => setFilePrompt(fileId, promptId)}
+                            disabled={!isSelected}
+                          >
+                            <SelectTrigger className="h-8 text-xs">
+                              <SelectValue placeholder="Select prompt..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {compatiblePrompts.map((prompt: any) => (
+                                <SelectItem key={prompt.id} value={prompt.id}>
+                                  {prompt.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>{selectedFileIds.size} of {uploadedFiles.length} files selected</span>
                 <div className="space-x-2">
                   <Button variant="ghost" size="sm" onClick={selectAllFiles}>
                     Select All
@@ -622,47 +718,8 @@ export default function ToolUseSection() {
                   </Button>
                 </div>
               </div>
-              
-              <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
-                {uploadedFiles.map((uploadedFile) => (
-                  <label
-                    key={uploadedFile.fileId}
-                    className="flex items-start gap-3 p-2 rounded hover:bg-accent cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedFileIds.has(uploadedFile.fileId!)}
-                      onChange={() => toggleFileSelection(uploadedFile.fileId!)}
-                      className="mt-1"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm">File #{uploadedFile.fileId}</div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {uploadedFile.contextFields.brand} • {uploadedFile.contextFields.category} • {uploadedFile.filetype}
-                      </div>
-                    </div>
-                  </label>
-                ))}
-              </div>
-              
-              <div className="text-sm text-muted-foreground">
-                {selectedFileIds.size} of {uploadedFiles.length} files selected
-              </div>
             </div>
           )}
-          
-          <div>
-            <Label htmlFor="focus">Analysis Focus</Label>
-            <Select value={focus} onValueChange={(v: any) => setFocus(v)}>
-              <SelectTrigger id="focus">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="branding">Branding</SelectItem>
-                <SelectItem value="performance">Performance</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
           <Button
             onClick={handleRunAnalysis}

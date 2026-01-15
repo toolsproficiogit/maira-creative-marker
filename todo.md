@@ -381,3 +381,28 @@
 - [x] Show confirmation dialog before reset
 - [x] Reset session ID after clearing (creates new session)
 - [x] Show success toast after reset
+
+## Per-File Prompt Selection
+
+### UI Changes
+- [x] Remove global "Analysis Focus" dropdown
+- [x] Add per-file prompt selector in Run Analysis section
+- [x] Show file name with dropdown for each uploaded file
+- [x] Dropdown lists all available prompts from promptRouter
+- [x] Filter prompts by file type (image/video) automatically
+- [x] Store selected prompt ID for each file in Map<fileId, promptId>
+- [x] Auto-select default prompts when files are loaded
+- [x] Disable prompt selector when file is not selected
+- [x] Update "Run Analysis" button text to show file count
+
+### Backend Changes
+- [x] Update runAnalysis endpoint to accept array of {fileId, promptId}
+- [x] Changed input schema to filePromptPairs instead of focus + fileIds
+- [x] Fetch correct prompt for each file from GCS/defaults
+- [x] Use getPromptFromGCS with fallback to getDefaultPrompt
+- [x] Pass appropriate system prompt and output schema to Vertex AI
+- [x] Use prompt.systemPrompt and prompt.outputSchema for each file
+- [x] Ensure BigQuery table name comes from selected prompt
+- [x] Use prompt.bigqueryTable for table name
+- [x] Handle mixed prompt types in single analysis run
+- [x] Validate file type matches prompt type before analysis

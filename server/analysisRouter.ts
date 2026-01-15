@@ -215,42 +215,57 @@ export const analysisRouter = router({
     .input(
       z.object({
         sessionId: z.number(),
-        focus: z.enum(["branding", "performance"]),
-        fileIds: z.array(z.number()).optional(), // Optional: specific files to analyze
+        filePromptPairs: z.array(z.object({
+          fileId: z.number(),
+          promptId: z.string(),
+        })),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const db = await getDb();
-      let files: Awaited<ReturnType<typeof getFilesBySession>> = [];
-      
-      if (db) {
-        try {
-          const allFiles = await getFilesBySession(input.sessionId);
-          // Filter by fileIds if provided
-          if (input.fileIds && input.fileIds.length > 0) {
-            files = allFiles.filter(f => input.fileIds!.includes(f.id));
-          } else {
-            files = allFiles;
-          }
-        } catch (error) {
-          console.warn('[Analysis] Failed to get files from database:', error);
-        }
-      }
-      
-      if (files.length === 0) {
+      if (!db) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "No files found for this session. For standalone deployment without database, use the direct analysis endpoint.",
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
         });
       }
 
-      const config = getCachedConfig();
+      // Import prompt loading functions
+      const { getPromptFromGCS } = await import('./promptStorage');
+      const { getDefaultPrompt } = await import('./defaultPrompts');
+      
       const results = [];
 
-      for (const file of files) {
-        const configKey = `${file.filetype}-${input.focus}` as keyof typeof config.systemPrompts;
-        const systemPrompt = config.systemPrompts[configKey];
-        const outputConfig = config.outputSchemas[configKey];
+      for (const pair of input.filePromptPairs) {
+        // Get file from database
+        const file = await getFileById(pair.fileId);
+        if (!file) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `File ${pair.fileId} not found`,
+          });
+        }
+
+        // Load prompt from GCS or defaults
+        let prompt = await getPromptFromGCS(pair.promptId);
+        if (!prompt) {
+          // Fallback to default prompts
+          prompt = getDefaultPrompt(pair.promptId);
+        }
+        if (!prompt) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `Prompt ${pair.promptId} not found`,
+          });
+        }
+
+        // Validate file type matches prompt
+        if (file.filetype !== prompt.filetype) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `File type ${file.filetype} does not match prompt type ${prompt.filetype}`,
+          });
+        }
 
         const contextFields = {
           brand: file.brand,
@@ -262,40 +277,38 @@ export const analysisRouter = router({
           version: file.version || "",
         };
 
-        // Analyze with Vertex AI
+        // Analyze with Vertex AI using prompt data
         const analysisResult = await analyzeWithRetry({
           fileUrl: file.fileUrl,
           mimeType: file.mimeType || "application/octet-stream",
-          systemPrompt,
+          systemPrompt: prompt.systemPrompt,
           contextFields,
-          expectedSchema: outputConfig.schema,
+          expectedSchema: prompt.outputSchema,
           maxRetries: 2,
         });
 
-        // Store in database (optional)
-        if (db) {
-          try {
-            await createAnalysisResult({
-              fileId: file.id,
-              sessionId: input.sessionId,
-              focus: input.focus,
-              filetype: file.filetype,
-              analysisJson: JSON.stringify(analysisResult.result || {}),
-              bigqueryTable: analysisResult.success ? outputConfig.tableName : null,
-              retryCount: analysisResult.retryCount,
-              validationError: analysisResult.error || null,
-            });
-          } catch (dbError) {
-            console.warn('[Analysis] Failed to store result in database:', dbError);
-          }
+        // Store in database
+        try {
+          await createAnalysisResult({
+            fileId: file.id,
+            sessionId: input.sessionId,
+            focus: prompt.focus,
+            filetype: file.filetype,
+            analysisJson: JSON.stringify(analysisResult.result || {}),
+            bigqueryTable: analysisResult.success ? prompt.bigqueryTable : null,
+            retryCount: analysisResult.retryCount,
+            validationError: analysisResult.error || null,
+          });
+        } catch (dbError) {
+          console.warn('[Analysis] Failed to store result in database:', dbError);
         }
 
         // Store in BigQuery if successful
         if (analysisResult.success && analysisResult.result) {
           try {
-            await ensureTableExists(outputConfig.tableName, outputConfig.schema);
+            await ensureTableExists(prompt.bigqueryTable, prompt.outputSchema);
             await insertAnalysisResult({
-              tableName: outputConfig.tableName,
+              tableName: prompt.bigqueryTable,
               sessionId: input.sessionId,
               fileId: file.id,
               filename: file.filename,
