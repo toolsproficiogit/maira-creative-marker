@@ -420,8 +420,13 @@
 
 ## Bug Fix - Schema Error Still Persists
 
-- [ ] Same "Missing required fields: tableName, schema" error still occurs
-- [ ] Check if GCS prompts also have the wrapper structure issue
-- [ ] Verify schema is correctly extracted in all code paths
-- [ ] Add logging to trace schema structure through pipeline
-- [ ] Test with actual file upload and analysis
+- [x] Same "Missing required fields: tableName, schema" error still occurs
+- [x] ROOT CAUSE FOUND: GCS prompts have outputSchema with wrapper {tableName, schema}
+- [x] Check if GCS prompts also have the wrapper structure issue
+- [x] Add logging to trace schema structure through pipeline
+- [x] Logs show: outputSchema keys: ['tableName', 'schema']
+- [x] Fix promptStorage.ts to unwrap schema when loading from GCS
+- [x] Added legacy fix to detect and unwrap {tableName, schema} structure
+- [x] Extracts schema.schema → outputSchema
+- [x] Extracts schema.tableName → bigqueryTable
+- [ ] Test with actual file upload and analysis in Cloud Run

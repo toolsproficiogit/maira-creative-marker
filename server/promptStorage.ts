@@ -74,7 +74,19 @@ export async function getPromptFromGCS(promptId: string): Promise<PromptConfig |
     }
     
     const [content] = await file.download();
-    const promptConfig: PromptConfig = JSON.parse(content.toString());
+    let promptConfig: PromptConfig = JSON.parse(content.toString());
+    
+    // LEGACY FIX: Unwrap outputSchema if it has the old {tableName, schema} structure
+    if (promptConfig.outputSchema && 'schema' in promptConfig.outputSchema && 'tableName' in promptConfig.outputSchema) {
+      console.log(`[PromptStorage] Unwrapping legacy schema structure for ${promptId}`);
+      const legacySchema = promptConfig.outputSchema as any;
+      promptConfig = {
+        ...promptConfig,
+        outputSchema: legacySchema.schema,
+        // Also update bigqueryTable if it exists in the schema wrapper
+        bigqueryTable: legacySchema.tableName || promptConfig.bigqueryTable,
+      };
+    }
     
     console.log(`[PromptStorage] Retrieved prompt ${promptId} from GCS`);
     return promptConfig;
