@@ -353,3 +353,31 @@
 - [x] Commented out canManageDefaults check
 - [x] Allow anyone to initialize defaults during testing phase
 - [x] Add TODO comment to restore admin check in Phase 2
+
+## Phase 1 UX Improvements - File Management
+
+### Drag-and-Drop Upload
+- [x] Add drag-and-drop zone to Upload Files card
+- [x] Show visual feedback on drag over (highlight border, change background, animated upload icon)
+- [x] Display file count during drag
+- [x] Handle multiple file drops
+- [x] Validate file types and sizes on drop
+- [x] Show toast notifications for invalid files
+- [x] Integrated with existing file input for click-to-browse
+
+### Expandable File Cards
+- [x] Create individual card for each pending file
+- [x] Add expand/collapse toggle for each card with chevron icons
+- [x] Show file preview/details when expanded
+- [x] Default state: collapsed
+- [x] Add "Expand All" / "Collapse All" buttons
+- [x] Show file metadata (name, size, type, context fields)
+- [x] Click header to toggle, click Remove button to delete
+
+### Reset Session
+- [x] Add "Reset Session" button in Tool Use tab
+- [x] Clear all pending files from UI
+- [x] Clear all uploaded files from local state
+- [x] Show confirmation dialog before reset
+- [x] Reset session ID after clearing (creates new session)
+- [x] Show success toast after reset

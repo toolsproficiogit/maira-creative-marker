@@ -41,6 +41,9 @@ export default function ToolUseSection() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const [expandedResults, setExpandedResults] = useState<Set<number>>(new Set());
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragFileCount, setDragFileCount] = useState(0);
+  const [expandedPendingFiles, setExpandedPendingFiles] = useState<Set<number>>(new Set());
 
   const createSessionMutation = trpc.analysis.createSession.useMutation();
   const uploadFileMutation = trpc.analysis.uploadFile.useMutation();
@@ -97,8 +100,7 @@ export default function ToolUseSection() {
 
 
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+  const processFiles = (files: File[]) => {
     const newFiles: UploadedFile[] = files.map((file) => ({
       file,
       contextFields: {
@@ -112,6 +114,100 @@ export default function ToolUseSection() {
       },
     }));
     setPendingFiles([...pendingFiles, ...newFiles]);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    processFiles(files);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) {
+      setIsDragging(true);
+      const items = e.dataTransfer.items;
+      setDragFileCount(items.length);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set isDragging to false if we're leaving the drop zone entirely
+    if (e.currentTarget === e.target) {
+      setIsDragging(false);
+      setDragFileCount(0);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    setDragFileCount(0);
+
+    const files = Array.from(e.dataTransfer.files);
+    
+    // Validate file types
+    const validFiles = files.filter(file => {
+      const isValid = file.type.startsWith('image/') || file.type.startsWith('video/');
+      if (!isValid) {
+        toast.error(`${file.name} is not a valid image or video file`);
+      }
+      return isValid;
+    });
+
+    // Validate file sizes (1GB limit)
+    const sizeValidFiles = validFiles.filter(file => {
+      const isValid = file.size <= 1024 * 1024 * 1024;
+      if (!isValid) {
+        toast.error(`${file.name} exceeds 1GB size limit`);
+      }
+      return isValid;
+    });
+
+    if (sizeValidFiles.length > 0) {
+      processFiles(sizeValidFiles);
+      toast.success(`Added ${sizeValidFiles.length} file${sizeValidFiles.length > 1 ? 's' : ''}`);
+    }
+  };
+
+  const handleResetSession = async () => {
+    if (!confirm('Are you sure you want to reset this session? This will remove all uploaded files and clear the session.')) {
+      return;
+    }
+
+    // Clear local state
+    setPendingFiles([]);
+    setUploadedFiles([]);
+    setSelectedFileIds(new Set());
+    setResults([]);
+    setExpandedPendingFiles(new Set());
+    
+    // Clear session from localStorage and create new one
+    localStorage.removeItem('analysisSessionId');
+    setSessionId(null);
+    
+    toast.success('Session reset successfully');
+  };
+
+  const toggleExpandPendingFile = (index: number) => {
+    const newExpanded = new Set(expandedPendingFiles);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedPendingFiles(newExpanded);
+  };
+
+  const expandAllPendingFiles = () => {
+    setExpandedPendingFiles(new Set(pendingFiles.map((_, i) => i)));
+  };
+
+  const collapseAllPendingFiles = () => {
+    setExpandedPendingFiles(new Set());
   };
 
   const updateContextField = (index: number, field: string, value: string) => {
@@ -328,40 +424,111 @@ export default function ToolUseSection() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
+          {/* Drag and Drop Zone */}
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              isDragging
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/50'
+            } ${!sessionId ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          >
+            {isDragging ? (
+              <div className="space-y-2">
+                <Upload className="mx-auto h-12 w-12 text-primary animate-bounce" />
+                <p className="text-lg font-semibold text-primary">
+                  Drop {dragFileCount} file{dragFileCount > 1 ? 's' : ''} here
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Drag and drop files here</p>
+                  <p className="text-xs text-muted-foreground">or click to browse</p>
+                </div>
+                <p className="text-xs text-muted-foreground">Images and videos up to 1GB each</p>
+              </div>
+            )}
             <Input
               type="file"
               accept="image/*,video/*"
               multiple
               onChange={handleFileSelect}
               disabled={!sessionId}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
           </div>
+
+          {/* Reset Session Button */}
+          {(pendingFiles.length > 0 || uploadedFiles.length > 0) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleResetSession}
+              className="w-full"
+            >
+              Reset Session
+            </Button>
+          )}
 
           {/* Pending files (not yet uploaded) */}
           {pendingFiles.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-muted-foreground">Pending Upload</h3>
-              {pendingFiles.map((pendingFile, index) => (
-                <Card key={`pending-${index}`} className="border-orange-200 bg-orange-50/50">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">
-                        {pendingFile.file.name}
-                      </CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFile(index)}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                    <CardDescription>
-                      {(pendingFile.file.size / 1024 / 1024).toFixed(2)} MB
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-muted-foreground">Pending Upload ({pendingFiles.length})</h3>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={expandAllPendingFiles}
+                  >
+                    Expand All
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={collapseAllPendingFiles}
+                  >
+                    Collapse All
+                  </Button>
+                </div>
+              </div>
+              {pendingFiles.map((pendingFile, index) => {
+                const isExpanded = expandedPendingFiles.has(index);
+                return (
+                  <Card key={`pending-${index}`} className="border-orange-200 bg-orange-50/50">
+                    <CardHeader className="cursor-pointer" onClick={() => toggleExpandPendingFile(index)}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          )}
+                          <CardTitle className="text-base">
+                            {pendingFile.file.name}
+                          </CardTitle>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFile(index);
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                      <CardDescription>
+                        {(pendingFile.file.size / 1024 / 1024).toFixed(2)} MB • {pendingFile.file.type}
+                      </CardDescription>
+                    </CardHeader>
+                    {isExpanded && (
+                      <CardContent className="grid gap-4">
                     {configData?.contextFields.map((field) => (
                       <div key={field.name}>
                         <Label htmlFor={`pending-${index}-${field.name}`}>
@@ -384,9 +551,11 @@ export default function ToolUseSection() {
                         )}
                       </div>
                     ))}
-                  </CardContent>
-                </Card>
-              ))}
+                      </CardContent>
+                    )}
+                  </Card>
+                );
+              })}
 
               <Button onClick={handleUploadAll} disabled={!sessionId || uploadProgress !== null} className="w-full">
                 <Upload className="mr-2 h-4 w-4" />
