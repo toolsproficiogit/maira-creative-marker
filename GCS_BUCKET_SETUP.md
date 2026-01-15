@@ -125,9 +125,11 @@ gs://your-bucket/
         └── video2-ghi789.mp4
 ```
 
-## Prompt File Format
+### 4. Prompt File Format
 
-Each prompt is stored as a JSON file with this structure:
+**IMPORTANT:** Use the "Initialize Defaults" button in the Configuration tab to automatically create the correct file structure. Manual file creation is not recommended.
+
+Each prompt is stored as a **single JSON file** under `prompts/{promptId}.json` with the following structure:
 
 ```json
 {

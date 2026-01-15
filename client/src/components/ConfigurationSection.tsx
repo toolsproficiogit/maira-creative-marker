@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, RotateCcw, FileText, Database, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, Save, RotateCcw, FileText, Database, AlertCircle, CheckCircle2, Plus } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import type { PromptConfig } from "../../../shared/promptTypes";
@@ -16,10 +16,20 @@ export default function ConfigurationSection() {
   const { data: promptsData, isLoading, refetch } = trpc.prompts.list.useQuery();
   const initializeDefaultsMutation = trpc.prompts.initializeDefaults.useMutation();
   const updatePromptMutation = trpc.prompts.update.useMutation();
+  const createPromptMutation = trpc.prompts.create.useMutation();
 
   const [selectedPromptId, setSelectedPromptId] = useState<string | null>(null);
   const [editedPrompt, setEditedPrompt] = useState<PromptConfig | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [newPromptData, setNewPromptData] = useState({
+    id: "",
+    name: "",
+    description: "",
+    filetype: "image" as "image" | "video",
+    focus: "branding" as "branding" | "performance",
+    bigqueryTable: "",
+  });
 
   const { data: selectedPromptData } = trpc.prompts.get.useQuery(
     { promptId: selectedPromptId! },
@@ -35,6 +45,52 @@ export default function ConfigurationSection() {
       await refetch();
     } catch (error: any) {
       toast.error(`Failed to initialize: ${error.message}`);
+    }
+  };
+
+  const handleCreatePrompt = async () => {
+    // Validation
+    if (!newPromptData.id || !newPromptData.name || !newPromptData.bigqueryTable) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (!/^[a-z0-9_]+$/.test(newPromptData.id)) {
+      toast.error("Prompt ID must be lowercase alphanumeric with underscores only");
+      return;
+    }
+
+    if (!/^[a-z0-9_]+$/.test(newPromptData.bigqueryTable)) {
+      toast.error("BigQuery table name must be lowercase alphanumeric with underscores only");
+      return;
+    }
+
+    try {
+      await createPromptMutation.mutateAsync({
+        ...newPromptData,
+        systemPrompt: "# Add your system prompt here\n\n",
+        outputSchema: {
+          type: "object",
+          properties: {},
+          required: [],
+          additionalProperties: false,
+        },
+      });
+      toast.success(`Created prompt: ${newPromptData.name}`);
+      await refetch();
+      setIsCreatingNew(false);
+      setNewPromptData({
+        id: "",
+        name: "",
+        description: "",
+        filetype: "image",
+        focus: "branding",
+        bigqueryTable: "",
+      });
+      // Select the newly created prompt
+      setSelectedPromptId(newPromptData.id);
+    } catch (error: any) {
+      toast.error(`Failed to create prompt: ${error.message}`);
     }
   };
 
@@ -165,6 +221,10 @@ export default function ConfigurationSection() {
                   Initialize Defaults
                 </>
               )}
+            </Button>
+            <Button onClick={() => setIsCreatingNew(true)} variant="default">
+              <Plus className="mr-2 h-4 w-4" />
+              Create New Prompt
             </Button>
           </div>
         </CardContent>
@@ -377,6 +437,107 @@ export default function ConfigurationSection() {
           </Alert>
         </CardContent>
       </Card>
+
+      {/* Create New Prompt Dialog */}
+      {isCreatingNew && (
+        <Card className="border-2 border-primary">
+          <CardHeader>
+            <CardTitle>Create New Prompt</CardTitle>
+            <CardDescription>Define a new custom prompt configuration</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="newId">Prompt ID *</Label>
+                <Input
+                  id="newId"
+                  placeholder="e.g., custom_video_analysis"
+                  value={newPromptData.id}
+                  onChange={(e) => setNewPromptData({ ...newPromptData, id: e.target.value })}
+                  className="mt-2"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Lowercase alphanumeric with underscores only
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="newName">Prompt Name *</Label>
+                <Input
+                  id="newName"
+                  placeholder="e.g., Custom Video Analysis"
+                  value={newPromptData.name}
+                  onChange={(e) => setNewPromptData({ ...newPromptData, name: e.target.value })}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="newDescription">Description</Label>
+              <Textarea
+                id="newDescription"
+                placeholder="Describe what this prompt analyzes..."
+                value={newPromptData.description}
+                onChange={(e) => setNewPromptData({ ...newPromptData, description: e.target.value })}
+                rows={3}
+                className="mt-2"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="newFiletype">File Type *</Label>
+                <select
+                  id="newFiletype"
+                  value={newPromptData.filetype}
+                  onChange={(e) => setNewPromptData({ ...newPromptData, filetype: e.target.value as "image" | "video" })}
+                  className="w-full mt-2 px-3 py-2 border border-border rounded-md bg-background"
+                >
+                  <option value="image">Image</option>
+                  <option value="video">Video</option>
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="newFocus">Analysis Focus *</Label>
+                <select
+                  id="newFocus"
+                  value={newPromptData.focus}
+                  onChange={(e) => setNewPromptData({ ...newPromptData, focus: e.target.value as "branding" | "performance" })}
+                  className="w-full mt-2 px-3 py-2 border border-border rounded-md bg-background"
+                >
+                  <option value="branding">Branding</option>
+                  <option value="performance">Performance</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="newBigqueryTable">BigQuery Table Name *</Label>
+              <Input
+                id="newBigqueryTable"
+                placeholder="e.g., custom_video_analysis"
+                value={newPromptData.bigqueryTable}
+                onChange={(e) => setNewPromptData({ ...newPromptData, bigqueryTable: e.target.value })}
+                className="mt-2"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Lowercase alphanumeric with underscores only
+              </p>
+            </div>
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                After creating the prompt, you'll need to add the system prompt and output schema in the editor.
+              </AlertDescription>
+            </Alert>
+            <div className="flex gap-3">
+              <Button onClick={() => setIsCreatingNew(false)} variant="outline">
+                Cancel
+              </Button>
+              <Button onClick={handleCreatePrompt} disabled={createPromptMutation.isPending}>
+                Create Prompt
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

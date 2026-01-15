@@ -320,3 +320,29 @@
 - [x] Add TODO comment to re-enable auth in Phase 2
 - [x] Test Configuration tab loads without authentication
 - [x] Server running without errors, Configuration tab should now be accessible
+
+## GCS Storage and UI Improvements
+
+- [x] Fix GCS filename mismatch - app expects JSON files, bucket has .txt/.json split
+- [x] Investigated promptStorage.ts - expects single JSON files at prompts/{id}.json
+- [x] Updated GCS_BUCKET_SETUP.md with correct file format and "Initialize Defaults" instruction
+- [x] Fixed corrupted markdown in GCS_BUCKET_SETUP.md
+- [x] Add "Create New Prompt" button in Configuration UI
+- [x] Added Plus icon import
+- [x] Added isCreatingNew state
+- [x] Created create prompt dialog with all required fields
+- [x] Make prompt name field editable in metadata tab
+- [x] Name field already editable in Metadata tab (verified)
+- [x] Wire up create prompt functionality to trpc.prompts.create
+- [x] Added createPromptMutation
+- [x] Added newPromptData state for form
+- [x] Created handleCreatePrompt with validation
+- [x] Wired up all form inputs to state
+- [x] Form validates ID and table name format
+- [x] Creates prompt with empty system prompt and schema template
+- [x] Automatically selects newly created prompt
+- [x] Test prompt creation and editing with GCS
+- [x] Server running without errors
+- [x] Configuration tab accessible with Create New Prompt button
+- [x] Name field editable in Metadata tab
+- [x] Ready for user testing with GCS bucket
