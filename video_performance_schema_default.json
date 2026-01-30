@@ -30,7 +30,12 @@
             "description": "Secondary messages from context"
           }
         },
-        "required": ["brand", "category", "target_audience", "primary_message"],
+        "required": [
+          "brand",
+          "category",
+          "target_audience",
+          "primary_message"
+        ],
         "additionalProperties": false
       },
       "section_a_hook": {
@@ -38,125 +43,275 @@
         "properties": {
           "hook_evidence_timestamp": {
             "type": "string",
-            "description": "Timestamp of key moment (e.g., '0:00-0:03')"
+            "description": "Timestamp of key moment (e.g., '0:00-0:03')",
+            "x-viz": {
+              "type": "custom",
+              "size": "sm",
+              "weight": "medium",
+              "color": "text-gray-500"
+            }
           },
           "hook_evidence_description": {
             "type": "string",
-            "description": "Description of opening scene"
+            "description": "Description of opening scene",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "hook_analysis": {
             "type": "string",
-            "description": "Evaluation of hook and branding (2-3 sentences in Czech)"
+            "description": "Evaluation of hook and branding (2-3 sentences in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "hook_score": {
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "Score 1-5"
+            "description": "Score 1-5",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           }
         },
-        "required": ["hook_evidence_timestamp", "hook_evidence_description", "hook_analysis", "hook_score"],
-        "additionalProperties": false
+        "required": [
+          "hook_evidence_timestamp",
+          "hook_evidence_description",
+          "hook_analysis",
+          "hook_score"
+        ],
+        "additionalProperties": false,
+        "x-viz": "section_headline"
       },
       "section_b_message": {
         "type": "object",
         "properties": {
           "message_evidence_timestamp": {
             "type": "string",
-            "description": "Timestamp of main message delivery"
+            "description": "Timestamp of main message delivery",
+            "x-viz": {
+              "type": "custom",
+              "size": "sm",
+              "weight": "medium",
+              "color": "text-gray-500"
+            }
           },
           "message_evidence_description": {
             "type": "string",
-            "description": "Description of value proposition moment"
+            "description": "Description of value proposition moment",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "message_analysis": {
             "type": "string",
-            "description": "Evaluation of clarity and speed (2-3 sentences in Czech)"
+            "description": "Evaluation of clarity and speed (2-3 sentences in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "message_score": {
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "Score 1-5"
+            "description": "Score 1-5",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           }
         },
-        "required": ["message_evidence_timestamp", "message_evidence_description", "message_analysis", "message_score"],
-        "additionalProperties": false
+        "required": [
+          "message_evidence_timestamp",
+          "message_evidence_description",
+          "message_analysis",
+          "message_score"
+        ],
+        "additionalProperties": false,
+        "x-viz": "section_headline"
       },
       "section_c_pacing": {
         "type": "object",
         "properties": {
           "pacing_evidence_timestamp": {
             "type": "string",
-            "description": "Timestamp of weakest or strongest passage"
+            "description": "Timestamp of weakest or strongest passage",
+            "x-viz": {
+              "type": "custom",
+              "size": "sm",
+              "weight": "medium",
+              "color": "text-gray-500"
+            }
           },
           "pacing_evidence_description": {
             "type": "string",
-            "description": "Description of editing dynamics"
+            "description": "Description of editing dynamics",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "pacing_analysis": {
             "type": "string",
-            "description": "Evaluation of rhythm and editing (2-3 sentences in Czech)"
+            "description": "Evaluation of rhythm and editing (2-3 sentences in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "pacing_score": {
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "Score 1-5"
+            "description": "Score 1-5",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           }
         },
-        "required": ["pacing_evidence_timestamp", "pacing_evidence_description", "pacing_analysis", "pacing_score"],
-        "additionalProperties": false
+        "required": [
+          "pacing_evidence_timestamp",
+          "pacing_evidence_description",
+          "pacing_analysis",
+          "pacing_score"
+        ],
+        "additionalProperties": false,
+        "x-viz": "section_headline"
       },
       "section_d_cta": {
         "type": "object",
         "properties": {
           "cta_evidence_timestamp": {
             "type": "string",
-            "description": "Timestamp of CTA appearance"
+            "description": "Timestamp of CTA appearance",
+            "x-viz": {
+              "type": "custom",
+              "size": "sm",
+              "weight": "medium",
+              "color": "text-gray-500"
+            }
           },
           "cta_evidence_description": {
             "type": "string",
-            "description": "Description of final call-to-action"
+            "description": "Description of final call-to-action",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "cta_analysis": {
             "type": "string",
-            "description": "Evaluation of CTA strength (2-3 sentences in Czech)"
+            "description": "Evaluation of CTA strength (2-3 sentences in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "cta_score": {
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "Score 1-5"
+            "description": "Score 1-5",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           }
         },
-        "required": ["cta_evidence_timestamp", "cta_evidence_description", "cta_analysis", "cta_score"],
-        "additionalProperties": false
+        "required": [
+          "cta_evidence_timestamp",
+          "cta_evidence_description",
+          "cta_analysis",
+          "cta_score"
+        ],
+        "additionalProperties": false,
+        "x-viz": "section_headline"
       },
       "final_scorecard": {
         "type": "object",
         "properties": {
           "hook_weighted_score": {
             "type": "number",
-            "description": "hook_score * 0.3"
+            "description": "hook_score * 0.3",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "message_weighted_score": {
             "type": "number",
-            "description": "message_score * 0.3"
+            "description": "message_score * 0.3",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "pacing_weighted_score": {
             "type": "number",
-            "description": "pacing_score * 0.2"
+            "description": "pacing_score * 0.2",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "cta_weighted_score": {
             "type": "number",
-            "description": "cta_score * 0.2"
+            "description": "cta_score * 0.2",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "total_score": {
             "type": "number",
             "minimum": 0,
             "maximum": 5,
-            "description": "Sum of weighted scores (max 5.0)"
+            "description": "Sum of weighted scores (max 5.0)",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "total_percentage": {
             "type": "number",
@@ -166,23 +321,64 @@
           },
           "hook_verdict": {
             "type": "string",
-            "description": "Brief comment on Hook section (1 sentence in Czech)"
+            "description": "Brief comment on Hook section (1 sentence in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "message_verdict": {
             "type": "string",
-            "description": "Brief comment on Message section (1 sentence in Czech)"
+            "description": "Brief comment on Message section (1 sentence in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "pacing_verdict": {
             "type": "string",
-            "description": "Brief comment on Pacing section (1 sentence in Czech)"
+            "description": "Brief comment on Pacing section (1 sentence in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "cta_verdict": {
             "type": "string",
-            "description": "Brief comment on CTA section (1 sentence in Czech)"
+            "description": "Brief comment on CTA section (1 sentence in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           }
         },
-        "required": ["hook_weighted_score", "message_weighted_score", "pacing_weighted_score", "cta_weighted_score", "total_score", "total_percentage", "hook_verdict", "message_verdict", "pacing_verdict", "cta_verdict"],
-        "additionalProperties": false
+        "required": [
+          "hook_weighted_score",
+          "message_weighted_score",
+          "pacing_weighted_score",
+          "cta_weighted_score",
+          "total_score",
+          "total_percentage",
+          "hook_verdict",
+          "message_verdict",
+          "pacing_verdict",
+          "cta_verdict"
+        ],
+        "additionalProperties": false,
+        "x-viz": {
+          "type": "custom",
+          "size": "lg",
+          "weight": "bold",
+          "color": "text-blue-600"
+        }
       },
       "action_plan": {
         "type": "array",
@@ -191,27 +387,51 @@
           "properties": {
             "action_title": {
               "type": "string",
-              "description": "Action name (e.g., 'Hook Optimization')"
+              "description": "Action name (e.g., 'Hook Optimization')",
+              "x-viz": "paragraph_headline"
             },
             "action_description": {
               "type": "string",
-              "description": "Specific instructions including timestamps (in Czech)"
+              "description": "Specific instructions including timestamps (in Czech)",
+              "x-viz": {
+                "type": "custom",
+                "size": "base",
+                "weight": "normal",
+                "color": "text-gray-700"
+              }
             },
             "priority": {
               "type": "string",
-              "enum": ["high", "medium", "low"],
+              "enum": [
+                "high",
+                "medium",
+                "low"
+              ],
               "description": "Priority level"
             }
           },
-          "required": ["action_title", "action_description", "priority"],
-          "additionalProperties": false
+          "required": [
+            "action_title",
+            "action_description",
+            "priority"
+          ],
+          "additionalProperties": false,
+          "x-viz": "bullet_point"
         },
         "minItems": 3,
         "maxItems": 5,
         "description": "3-5 concrete action steps for optimization"
-          }
+      }
     },
-    "required": ["analysis_metadata", "section_a_hook", "section_b_message", "section_c_pacing", "section_d_cta", "final_scorecard", "action_plan"],
+    "required": [
+      "analysis_metadata",
+      "section_a_hook",
+      "section_b_message",
+      "section_c_pacing",
+      "section_d_cta",
+      "final_scorecard",
+      "action_plan"
+    ],
     "additionalProperties": false
   }
 }

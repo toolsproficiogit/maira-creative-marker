@@ -30,7 +30,12 @@
             "description": "Secondary messages from context"
           }
         },
-        "required": ["brand", "category", "target_audience", "primary_message"],
+        "required": [
+          "brand",
+          "category",
+          "target_audience",
+          "primary_message"
+        ],
         "additionalProperties": false
       },
       "section_a_attention": {
@@ -42,17 +47,34 @@
           },
           "attention_analysis": {
             "type": "string",
-            "description": "Evaluation of stop-power and branding (2-3 sentences in Czech)"
+            "description": "Evaluation of stop-power and branding (2-3 sentences in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "attention_score": {
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "Score 1-5"
+            "description": "Score 1-5",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           }
         },
-        "required": ["attention_evidence", "attention_analysis", "attention_score"],
-        "additionalProperties": false
+        "required": [
+          "attention_evidence",
+          "attention_analysis",
+          "attention_score"
+        ],
+        "additionalProperties": false,
+        "x-viz": "section_headline"
       },
       "section_b_copy": {
         "type": "object",
@@ -63,17 +85,34 @@
           },
           "copy_analysis": {
             "type": "string",
-            "description": "Evaluation of Primary vs. Secondary message delivery (2-3 sentences in Czech)"
+            "description": "Evaluation of Primary vs. Secondary message delivery (2-3 sentences in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "copy_score": {
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "Score 1-5"
+            "description": "Score 1-5",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           }
         },
-        "required": ["copy_evidence", "copy_analysis", "copy_score"],
-        "additionalProperties": false
+        "required": [
+          "copy_evidence",
+          "copy_analysis",
+          "copy_score"
+        ],
+        "additionalProperties": false,
+        "x-viz": "section_headline"
       },
       "section_c_offer": {
         "type": "object",
@@ -84,17 +123,34 @@
           },
           "offer_analysis": {
             "type": "string",
-            "description": "Evaluation of attractiveness (2-3 sentences in Czech)"
+            "description": "Evaluation of attractiveness (2-3 sentences in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "offer_score": {
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "Score 1-5"
+            "description": "Score 1-5",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           }
         },
-        "required": ["offer_evidence", "offer_analysis", "offer_score"],
-        "additionalProperties": false
+        "required": [
+          "offer_evidence",
+          "offer_analysis",
+          "offer_score"
+        ],
+        "additionalProperties": false,
+        "x-viz": "section_headline"
       },
       "section_d_cta": {
         "type": "object",
@@ -105,42 +161,89 @@
           },
           "cta_analysis": {
             "type": "string",
-            "description": "Evaluation of click motivation (2-3 sentences in Czech)"
+            "description": "Evaluation of click motivation (2-3 sentences in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "cta_score": {
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "Score 1-5"
+            "description": "Score 1-5",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           }
         },
-        "required": ["cta_evidence", "cta_analysis", "cta_score"],
-        "additionalProperties": false
+        "required": [
+          "cta_evidence",
+          "cta_analysis",
+          "cta_score"
+        ],
+        "additionalProperties": false,
+        "x-viz": "section_headline"
       },
       "final_scorecard": {
         "type": "object",
         "properties": {
           "attention_weighted_score": {
             "type": "number",
-            "description": "attention_score * 0.3"
+            "description": "attention_score * 0.3",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "copy_weighted_score": {
             "type": "number",
-            "description": "copy_score * 0.3"
+            "description": "copy_score * 0.3",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "offer_weighted_score": {
             "type": "number",
-            "description": "offer_score * 0.2"
+            "description": "offer_score * 0.2",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "cta_weighted_score": {
             "type": "number",
-            "description": "cta_score * 0.2"
+            "description": "cta_score * 0.2",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "total_score": {
             "type": "number",
             "minimum": 0,
             "maximum": 5,
-            "description": "Sum of weighted scores (max 5.0)"
+            "description": "Sum of weighted scores (max 5.0)",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "total_percentage": {
             "type": "number",
@@ -150,19 +253,43 @@
           },
           "attention_verdict": {
             "type": "string",
-            "description": "Brief comment on Attention section (1 sentence in Czech)"
+            "description": "Brief comment on Attention section (1 sentence in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "copy_verdict": {
             "type": "string",
-            "description": "Brief comment on Copy section (1 sentence in Czech)"
+            "description": "Brief comment on Copy section (1 sentence in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "offer_verdict": {
             "type": "string",
-            "description": "Brief comment on Offer section (1 sentence in Czech)"
+            "description": "Brief comment on Offer section (1 sentence in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "cta_verdict": {
             "type": "string",
-            "description": "Brief comment on CTA section (1 sentence in Czech)"
+            "description": "Brief comment on CTA section (1 sentence in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           }
         },
         "required": [
@@ -177,7 +304,13 @@
           "offer_verdict",
           "cta_verdict"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "x-viz": {
+          "type": "custom",
+          "size": "lg",
+          "weight": "bold",
+          "color": "text-blue-600"
+        }
       },
       "action_plan": {
         "type": "array",
@@ -186,20 +319,36 @@
           "properties": {
             "action_title": {
               "type": "string",
-              "description": "Action name (e.g., 'Boost Distinctiveness')"
+              "description": "Action name (e.g., 'Boost Distinctiveness')",
+              "x-viz": "paragraph_headline"
             },
             "action_description": {
               "type": "string",
-              "description": "Specific instructions (in Czech)"
+              "description": "Specific instructions (in Czech)",
+              "x-viz": {
+                "type": "custom",
+                "size": "base",
+                "weight": "normal",
+                "color": "text-gray-700"
+              }
             },
             "priority": {
               "type": "string",
-              "enum": ["high", "medium", "low"],
+              "enum": [
+                "high",
+                "medium",
+                "low"
+              ],
               "description": "Priority level"
             }
           },
-          "required": ["action_title", "action_description", "priority"],
-          "additionalProperties": false
+          "required": [
+            "action_title",
+            "action_description",
+            "priority"
+          ],
+          "additionalProperties": false,
+          "x-viz": "bullet_point"
         },
         "minItems": 3,
         "maxItems": 5,

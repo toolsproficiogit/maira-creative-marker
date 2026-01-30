@@ -338,6 +338,7 @@ export const analysisRouter = router({
           result: analysisResult.result,
           error: analysisResult.error,
           retryCount: analysisResult.retryCount,
+          schema: prompt.outputSchema, // Include schema for visualization
         });
       }
 

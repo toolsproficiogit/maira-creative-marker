@@ -30,7 +30,12 @@
             "description": "Secondary messages from context"
           }
         },
-        "required": ["brand", "category", "target_audience", "primary_message"],
+        "required": [
+          "brand",
+          "category",
+          "target_audience",
+          "primary_message"
+        ],
         "additionalProperties": false
       },
       "section_a_linkage": {
@@ -38,125 +43,275 @@
         "properties": {
           "linkage_evidence_timestamp": {
             "type": "string",
-            "description": "Timestamp of key integration moments"
+            "description": "Timestamp of key integration moments",
+            "x-viz": {
+              "type": "custom",
+              "size": "sm",
+              "weight": "medium",
+              "color": "text-gray-500"
+            }
           },
           "linkage_evidence_description": {
             "type": "string",
-            "description": "Description of brand-story connection moments"
+            "description": "Description of brand-story connection moments",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "linkage_analysis": {
             "type": "string",
-            "description": "Evaluation of Brand-Story linkage (2-3 sentences in Czech)"
+            "description": "Evaluation of Brand-Story linkage (2-3 sentences in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "linkage_score": {
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "Score 1-5"
+            "description": "Score 1-5",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           }
         },
-        "required": ["linkage_evidence_timestamp", "linkage_evidence_description", "linkage_analysis", "linkage_score"],
-        "additionalProperties": false
+        "required": [
+          "linkage_evidence_timestamp",
+          "linkage_evidence_description",
+          "linkage_analysis",
+          "linkage_score"
+        ],
+        "additionalProperties": false,
+        "x-viz": "section_headline"
       },
       "section_b_story": {
         "type": "object",
         "properties": {
           "story_evidence_timestamp": {
             "type": "string",
-            "description": "Timestamp of emotional peak"
+            "description": "Timestamp of emotional peak",
+            "x-viz": {
+              "type": "custom",
+              "size": "sm",
+              "weight": "medium",
+              "color": "text-gray-500"
+            }
           },
           "story_evidence_description": {
             "type": "string",
-            "description": "Description of emotional story structure"
+            "description": "Description of emotional story structure",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "story_analysis": {
             "type": "string",
-            "description": "Evaluation of story strength (2-3 sentences in Czech)"
+            "description": "Evaluation of story strength (2-3 sentences in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "story_score": {
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "Score 1-5"
+            "description": "Score 1-5",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           }
         },
-        "required": ["story_evidence_timestamp", "story_evidence_description", "story_analysis", "story_score"],
-        "additionalProperties": false
+        "required": [
+          "story_evidence_timestamp",
+          "story_evidence_description",
+          "story_analysis",
+          "story_score"
+        ],
+        "additionalProperties": false,
+        "x-viz": "section_headline"
       },
       "section_c_message": {
         "type": "object",
         "properties": {
           "message_evidence_timestamp": {
             "type": "string",
-            "description": "Timestamp of 'Aha moment'"
+            "description": "Timestamp of 'Aha moment'",
+            "x-viz": {
+              "type": "custom",
+              "size": "sm",
+              "weight": "medium",
+              "color": "text-gray-500"
+            }
           },
           "message_evidence_description": {
             "type": "string",
-            "description": "Description of message delivery"
+            "description": "Description of message delivery",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "message_analysis": {
             "type": "string",
-            "description": "Evaluation of message comprehension (2-3 sentences in Czech)"
+            "description": "Evaluation of message comprehension (2-3 sentences in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "message_score": {
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "Score 1-5"
+            "description": "Score 1-5",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           }
         },
-        "required": ["message_evidence_timestamp", "message_evidence_description", "message_analysis", "message_score"],
-        "additionalProperties": false
+        "required": [
+          "message_evidence_timestamp",
+          "message_evidence_description",
+          "message_analysis",
+          "message_score"
+        ],
+        "additionalProperties": false,
+        "x-viz": "section_headline"
       },
       "section_d_craft": {
         "type": "object",
         "properties": {
           "craft_evidence_timestamp": {
             "type": "string",
-            "description": "Timestamp of craft evaluation"
+            "description": "Timestamp of craft evaluation",
+            "x-viz": {
+              "type": "custom",
+              "size": "sm",
+              "weight": "medium",
+              "color": "text-gray-500"
+            }
           },
           "craft_evidence_description": {
             "type": "string",
-            "description": "Description of execution quality"
+            "description": "Description of execution quality",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "craft_analysis": {
             "type": "string",
-            "description": "Evaluation of craft quality (2-3 sentences in Czech)"
+            "description": "Evaluation of craft quality (2-3 sentences in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "craft_score": {
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "Score 1-5"
+            "description": "Score 1-5",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           }
         },
-        "required": ["craft_evidence_timestamp", "craft_evidence_description", "craft_analysis", "craft_score"],
-        "additionalProperties": false
+        "required": [
+          "craft_evidence_timestamp",
+          "craft_evidence_description",
+          "craft_analysis",
+          "craft_score"
+        ],
+        "additionalProperties": false,
+        "x-viz": "section_headline"
       },
       "final_scorecard": {
         "type": "object",
         "properties": {
           "linkage_weighted_score": {
             "type": "number",
-            "description": "linkage_score * 0.35"
+            "description": "linkage_score * 0.35",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "story_weighted_score": {
             "type": "number",
-            "description": "story_score * 0.25"
+            "description": "story_score * 0.25",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "message_weighted_score": {
             "type": "number",
-            "description": "message_score * 0.25"
+            "description": "message_score * 0.25",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "craft_weighted_score": {
             "type": "number",
-            "description": "craft_score * 0.15"
+            "description": "craft_score * 0.15",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "total_score": {
             "type": "number",
             "minimum": 0,
             "maximum": 5,
-            "description": "Sum of weighted scores (max 5.0)"
+            "description": "Sum of weighted scores (max 5.0)",
+            "x-viz": {
+              "type": "custom",
+              "size": "lg",
+              "weight": "bold",
+              "color": "text-blue-600"
+            }
           },
           "total_percentage": {
             "type": "number",
@@ -166,19 +321,43 @@
           },
           "linkage_verdict": {
             "type": "string",
-            "description": "Brief comment on Linkage section (1 sentence in Czech)"
+            "description": "Brief comment on Linkage section (1 sentence in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "story_verdict": {
             "type": "string",
-            "description": "Brief comment on Story section (1 sentence in Czech)"
+            "description": "Brief comment on Story section (1 sentence in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "message_verdict": {
             "type": "string",
-            "description": "Brief comment on Message section (1 sentence in Czech)"
+            "description": "Brief comment on Message section (1 sentence in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           },
           "craft_verdict": {
             "type": "string",
-            "description": "Brief comment on Craft section (1 sentence in Czech)"
+            "description": "Brief comment on Craft section (1 sentence in Czech)",
+            "x-viz": {
+              "type": "custom",
+              "size": "base",
+              "weight": "normal",
+              "color": "text-gray-700"
+            }
           }
         },
         "required": [
@@ -193,7 +372,13 @@
           "message_verdict",
           "craft_verdict"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "x-viz": {
+          "type": "custom",
+          "size": "lg",
+          "weight": "bold",
+          "color": "text-blue-600"
+        }
       },
       "action_plan": {
         "type": "array",
@@ -202,20 +387,36 @@
           "properties": {
             "action_title": {
               "type": "string",
-              "description": "Action name (e.g., 'Boost Linkage')"
+              "description": "Action name (e.g., 'Boost Linkage')",
+              "x-viz": "paragraph_headline"
             },
             "action_description": {
               "type": "string",
-              "description": "Specific instructions including timestamps (in Czech)"
+              "description": "Specific instructions including timestamps (in Czech)",
+              "x-viz": {
+                "type": "custom",
+                "size": "base",
+                "weight": "normal",
+                "color": "text-gray-700"
+              }
             },
             "priority": {
               "type": "string",
-              "enum": ["high", "medium", "low"],
+              "enum": [
+                "high",
+                "medium",
+                "low"
+              ],
               "description": "Priority level"
             }
           },
-          "required": ["action_title", "action_description", "priority"],
-          "additionalProperties": false
+          "required": [
+            "action_title",
+            "action_description",
+            "priority"
+          ],
+          "additionalProperties": false,
+          "x-viz": "bullet_point"
         },
         "minItems": 3,
         "maxItems": 5,

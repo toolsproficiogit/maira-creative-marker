@@ -442,3 +442,55 @@
 - [x] Updated video_branding, video_performance, image_branding, image_performance
 - [ ] Test language enforcement with both prompt types
 - [ ] Consider adding language parameter to context fields (future enhancement)
+
+## Visualization Framework Implementation
+
+### Visualization Dictionary
+- [x] Create shared/visualizationDictionary.ts with predefined styles
+- [x] Define types: main_headline, section_headline, paragraph_headline, section_divider, table_header, table_row, bullet_point
+- [x] Control elements: size, boldness, color, bulletpoint, table, section line
+- [x] Export TypeScript types for x-viz annotations
+- [x] Added resolveVisualizationStyle() to look up dictionary or use custom
+- [x] Added getVisualizationClasses() to convert styles to Tailwind CSS
+
+### Schema Annotation Support
+- [x] Add x-viz field support to JSON Schema processing
+- [x] Created shared/schemaVisualization.ts
+- [x] Create utility to resolve style (dictionary ID or custom definition)
+- [x] extractVisualizationMetadata() extracts all x-viz annotations from schema
+- [x] getFieldVisualization() looks up style for specific field path
+- [x] Handle nested objects and arrays with visualization rules
+- [x] Added inferVisualizationFromFieldName() for fallback styling
+
+### Results Display Component
+- [x] Create ResultsDisplay component that renders based on x-viz annotations
+- [x] Created client/src/components/ResultsDisplay.tsx
+- [x] Implement rendering for all visualization types
+- [x] PrimitiveRenderer for text values
+- [x] ObjectRenderer for nested structures
+- [x] ArrayRenderer for lists
+- [x] BulletListRenderer for bullet points
+- [x] TableRenderer for tabular data
+- [x] SectionDivider for section separators
+- [x] Style with Tailwind based on visualization rules
+- [x] Auto-formats field names as labels
+- [x] Integrated ResultsDisplay into ToolUseSection
+- [x] Replaced formatResultData with ResultsDisplay component
+- [x] Updated analysisRouter to include schema in results
+- [ ] Add collapsible sections for long outputs (future enhancement)
+- [ ] Add tabbed view (Overview, Scores, Evidence, Action Plan) (future enhancement)
+
+### Update Default Schemas
+- [x] Add x-viz annotations to video_branding schema
+- [x] Add x-viz annotations to video_performance schema
+- [x] Add x-viz annotations to image_branding schema
+- [x] Add x-viz annotations to image_performance schema
+- [x] Created Python script to add annotations programmatically
+- [x] Added annotations based on field name patterns (scores, timestamps, sections, etc.)
+- [ ] Test with actual analysis outputs
+
+### Testing
+- [ ] Test all visualization types render correctly
+- [ ] Test custom vs dictionary styles
+- [ ] Test with real analysis results
+- [ ] Verify export compatibility (CSV/PDF)

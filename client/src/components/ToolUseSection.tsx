@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Upload, Play, CheckCircle2, XCircle, ChevronDown, ChevronRight } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { ResultsDisplay } from "@/components/ResultsDisplay";
 
 
 interface UploadedFile {
@@ -398,64 +399,7 @@ export default function ToolUseSection() {
     setExpandedResults(newExpanded);
   };
 
-  const formatResultData = (data: any) => {
-    if (!data) return null;
-
-    return Object.entries(data).map(([key, value]) => {
-      const formattedKey = key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-      
-      if (Array.isArray(value)) {
-        return (
-          <div key={key} className="mb-3">
-            <div className="font-semibold text-sm mb-1">{formattedKey}:</div>
-            {value.length > 0 && typeof value[0] === "object" && value[0] !== null ? (
-              // Array of objects - display as structured list
-              <div className="space-y-2 pl-4">
-                {value.map((item, idx) => (
-                  <div key={idx} className="border-l-2 border-gray-300 pl-3 py-1">
-                    <div className="font-medium text-xs text-muted-foreground mb-1">Item {idx + 1}</div>
-                    {Object.entries(item).map(([subKey, subValue]) => (
-                      <div key={subKey} className="text-sm">
-                        <span className="font-medium">{subKey.replace(/_/g, " ")}:</span>{" "}
-                        {String(subValue)}
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              // Array of primitives - display as list
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                {value.map((item, idx) => (
-                  <li key={idx}>{String(item)}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-        );
-      } else if (typeof value === "object" && value !== null) {
-        return (
-          <div key={key} className="mb-3">
-            <div className="font-semibold text-sm mb-1">{formattedKey}:</div>
-            <div className="pl-4 space-y-1 text-sm">
-              {Object.entries(value).map(([subKey, subValue]) => (
-                <div key={subKey}>
-                  <span className="font-medium">{subKey.replace(/_/g, " ")}:</span>{" "}
-                  {String(subValue)}
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      } else {
-        return (
-          <div key={key} className="mb-2 text-sm">
-            <span className="font-semibold">{formattedKey}:</span> {String(value)}
-          </div>
-        );
-      }
-    });
-  };
+  // formatResultData removed - now using ResultsDisplay component
 
   return (
     <div className="space-y-6">
@@ -784,7 +728,10 @@ export default function ToolUseSection() {
                 
                 {expandedResults.has(index) && result.success && (
                   <div className="p-4 border-t bg-muted/30">
-                    {formatResultData(result.result)}
+                    <ResultsDisplay 
+                      data={result.result} 
+                      schema={result.schema || {}} 
+                    />
                   </div>
                 )}
               </Card>
